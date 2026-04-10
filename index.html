@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 V35</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <title>Zone2 專業訓練儀表板 V36</title>
     <style>
         :root {
             --bg-page: #f5f5f7;
@@ -28,7 +27,8 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            font-family: 'Nunito', 'TsukuARdGothic-Regular', 'cwTeXYen', 'PingFang TC', 'Noto Sans TC', sans-serif; 
+            /* 恢復原本的系統預設字體 */
+            font-family: -apple-system, "Noto Sans TC", sans-serif; 
             background-color: var(--bg-page); color: var(--text-dark); 
             margin: 0; height: 100dvh; width: 100vw; overflow: hidden; 
             display: flex; flex-direction: column;
@@ -43,13 +43,12 @@
         .setup-title { font-size: 1.8rem; font-weight: 900; margin: 0; }
         .total-summary { font-size: 1rem; color: var(--text-muted); font-weight: 700; margin-top: 5px; }
         
-        /* 修正：恢復三欄輸入框的排版 */
         .inputs-list { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding: 5px 0; justify-content: center; }
         .setup-card { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 12px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.03); flex: 1; min-height: 0; border-left: 8px solid; }
         .card-name { font-weight: 900; font-size: 1rem; color: var(--text-dark); }
         .input-group { display: flex; flex-direction: column; align-items: center; gap: 2px; }
         .input-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); }
-        .setup-card input { border: 1px solid #d2d2d7; background: #f5f5f7; padding: 4px; border-radius: 6px; font-size: 1.1rem; text-align: center; font-weight: 900; width: 100%; font-family: 'Nunito', sans-serif; }
+        .setup-card input { border: 1px solid #d2d2d7; background: #f5f5f7; padding: 4px; border-radius: 6px; font-size: 1.1rem; text-align: center; font-weight: 900; width: 100%; }
 
         /* --- 運動畫面 --- */
         .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 10px 0; flex-shrink: 0;}
@@ -64,17 +63,15 @@
         .flash-pulse { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
         .pulse-active { animation: soft-pulse 0.4s ease-in-out; }
 
-        .button-area { padding: 15px 0; flex-shrink: 0; display: flex; flex-direction: column; }
-        button { border: none; padding: 18px; font-size: 1.3rem; font-weight: 900; border-radius: 20px; cursor: pointer; width: 100%; height: 65px; transition: opacity 0.2s; white-space: nowrap; font-family: inherit; }
+        /* 恢復原本的按鈕區域排版 */
+        .button-area { padding: 15px 0; flex-shrink: 0; width: 100%; }
+        button { border: none; padding: 18px; font-size: 1.3rem; font-weight: 900; border-radius: 20px; cursor: pointer; width: 100%; height: 65px; transition: opacity 0.2s; white-space: nowrap; }
         button:active { opacity: 0.8; }
         .btn-finish, .btn-start { background: var(--btn-blue-bg); color: #fff; }
         .btn-gray { background: #e8e8ed; color: var(--text-dark); }
         .btn-red { background: #ff3b30 !important; color: #fff !important; }
         .control-group { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; width: 100%; }
         .control-group button { font-size: 1.15rem; }
-
-        /* 版本號小字 */
-        .version-text { text-align: center; font-size: 0.65rem; color: #d1d1d6; margin-top: 10px; font-weight: 700; letter-spacing: 1px; }
 
         /* --- 結算畫面 --- */
         #resultView {
@@ -155,8 +152,7 @@
         </div>
         <div class="inputs-list" id="inputsList"></div>
         <div class="button-area">
-            <button class="btn-finish" onclick="startWorkout()">完成設定並開始訓練</button>
-            <div class="version-text">v35</div>
+            <button class="btn-finish" onclick="startWorkout()">完成並開始訓練</button>
         </div>
     </div>
 
@@ -169,7 +165,7 @@
             <div class="info-row" id="infoRow" style="z-index: 2;">
                 <div><span id="inclineLabel"></span>坡度：<span id="incline">--</span>%</div>
                 <div><span id="speedLabel"></span>速度：<span id="speed">--</span> km/h</div>
-                <div id="totalTimeRow" style="margin-top: 5px; color: var(--text-muted); font-size: 1.1rem;">實際累積：<span id="totalTime">00:00</span></div>
+                <div id="totalTimeRow" style="margin-top: 5px; color: var(--text-muted); font-size: 1.1rem;">實質累積：<span id="totalTime">00:00</span></div>
             </div>
         </div>
         <div class="button-area">
@@ -256,7 +252,6 @@
         layer.classList.add('pulse-active');
     }
 
-    // 修正：加回時間、坡度、速度輸入框
     function initSetup() {
         const list = document.getElementById('inputsList');
         list.innerHTML = '';
@@ -292,7 +287,6 @@
         });
     }
 
-    // 修正：將時間、坡度、速度寫回陣列
     function startWorkout() {
         stages.forEach((s, i) => { 
             s.d = parseInt(document.getElementById(`d-${i}`).value) || 1; 
