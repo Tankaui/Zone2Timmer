@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 專業訓練儀表板 V33</title>
+    <title>Zone2 專業訓練儀表板 V35</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-page: #f5f5f7;
             --card-white: #ffffff;
             --text-dark: #1d1d1f;
             --text-muted: #86868b;
-            --accent: #40b0e5; /* 藍色 */
+            --accent: #40b0e5; 
             --c1: #e0f2ff; --c1-t: #007aff;
             --c2: #e0fff2; --c2-t: #00af91;
             --c3: #e8f5e9; --c3-t: #34c759;
@@ -27,7 +28,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            font-family: -apple-system, "Noto Sans TC", sans-serif; 
+            font-family: 'Nunito', 'TsukuARdGothic-Regular', 'cwTeXYen', 'PingFang TC', 'Noto Sans TC', sans-serif; 
             background-color: var(--bg-page); color: var(--text-dark); 
             margin: 0; height: 100dvh; width: 100vw; overflow: hidden; 
             display: flex; flex-direction: column;
@@ -40,10 +41,15 @@
         /* --- 設定畫面 --- */
         .setup-header { text-align: center; padding: 15px 0; flex-shrink: 0; }
         .setup-title { font-size: 1.8rem; font-weight: 900; margin: 0; }
-        .total-summary { font-size: 1rem; color: var(--text-muted); font-weight: 600; margin-top: 5px; }
-        .inputs-list { flex: 1; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding: 5px 0; justify-content: center; }
-        .setup-card { display: grid; grid-template-columns: 80px 1fr 40px; align-items: center; padding: 12px 20px; border-radius: 16px; background: #fff; flex-shrink: 0; border-left: 8px solid; }
-        .setup-card input { border: 1px solid #d2d2d7; background: #f5f5f7; padding: 8px; border-radius: 10px; font-size: 1.2rem; text-align: center; font-weight: 900; width: 100%; }
+        .total-summary { font-size: 1rem; color: var(--text-muted); font-weight: 700; margin-top: 5px; }
+        
+        /* 修正：恢復三欄輸入框的排版 */
+        .inputs-list { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding: 5px 0; justify-content: center; }
+        .setup-card { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 12px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.03); flex: 1; min-height: 0; border-left: 8px solid; }
+        .card-name { font-weight: 900; font-size: 1rem; color: var(--text-dark); }
+        .input-group { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .input-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); }
+        .setup-card input { border: 1px solid #d2d2d7; background: #f5f5f7; padding: 4px; border-radius: 6px; font-size: 1.1rem; text-align: center; font-weight: 900; width: 100%; font-family: 'Nunito', sans-serif; }
 
         /* --- 運動畫面 --- */
         .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 10px 0; flex-shrink: 0;}
@@ -58,122 +64,85 @@
         .flash-pulse { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
         .pulse-active { animation: soft-pulse 0.4s ease-in-out; }
 
-        .button-area { padding: 15px 0; flex-shrink: 0; }
-        button { border: none; padding: 18px; font-size: 1.3rem; font-weight: 900; border-radius: 20px; cursor: pointer; width: 100%; height: 65px; transition: opacity 0.2s; white-space: nowrap; }
+        .button-area { padding: 15px 0; flex-shrink: 0; display: flex; flex-direction: column; }
+        button { border: none; padding: 18px; font-size: 1.3rem; font-weight: 900; border-radius: 20px; cursor: pointer; width: 100%; height: 65px; transition: opacity 0.2s; white-space: nowrap; font-family: inherit; }
         button:active { opacity: 0.8; }
         .btn-finish, .btn-start { background: var(--btn-blue-bg); color: #fff; }
         .btn-gray { background: #e8e8ed; color: var(--text-dark); }
         .btn-red { background: #ff3b30 !important; color: #fff !important; }
-        .control-group { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; }
+        .control-group { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; width: 100%; }
         .control-group button { font-size: 1.15rem; }
 
-        /* --- 結算畫面設計優化 --- */
+        /* 版本號小字 */
+        .version-text { text-align: center; font-size: 0.65rem; color: #d1d1d6; margin-top: 10px; font-weight: 700; letter-spacing: 1px; }
+
+        /* --- 結算畫面 --- */
         #resultView {
             background-color: var(--bg-page);
             padding: 0; 
             overflow: hidden;
         }
 
-        /* 修正：明顯的「獎」字浮水印，參考範例圖定位在偏左上，逆時針旋轉，顏色帶微暖橘色 */
         .bg-award-watermark {
             position: absolute; 
-            top: 5dvh; 
-            left: -15dvw; 
+            top: 12dvh; 
+            left: -10dvw; 
             transform: rotate(-15deg); 
-            font-size: 26rem; /* 調整為適中偏大的尺寸 */
+            font-size: 38rem; 
             font-weight: 900; 
-            color: rgba(250, 120, 50, 0.06); /* 暖橘色，提高可見度 */
+            color: rgba(250, 120, 50, 0.05); 
             pointer-events: none; user-select: none; z-index: 0;
             line-height: 1;
         }
 
         .result-container {
-            flex: 1;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1;
-            aspect-ratio: 16 / 9;
-            max-width: 90dvw; 
-            margin: auto; 
-            padding: 30px;
+            flex: 1; width: 100%; height: 100%; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 1; aspect-ratio: 16 / 9;
+            max-width: 90dvw; margin: auto; padding: 30px;
         }
 
-        /* 亮黃色標題勳章風 */
         .result-title-card {
-            background-color: var(--res-title-bg);
-            color: var(--res-title-text);
-            padding: 18px 40px;
-            border-radius: 18px;
-            font-size: 2.5rem;
-            font-weight: 900;
-            letter-spacing: -1.5px;
-            margin-bottom: 25px; 
-            box-shadow: 0 5px 0 rgba(255,159,0,0.1);
+            background-color: var(--res-title-bg); color: var(--res-title-text);
+            padding: 18px 40px; border-radius: 18px; font-size: 2.5rem; font-weight: 900;
+            letter-spacing: -1.5px; margin-bottom: 25px; box-shadow: 0 5px 0 rgba(255,159,0,0.1);
             position: relative;
         }
 
-        /* 平面色塊進度條 */
         .result-progress-bar {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 0px;
-            width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 25px;
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 0px;
+            width: 100%; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 25px;
         }
         .prog-dot { height: 100%; }
 
         .result-main-text { color: var(--text-dark); font-size: 1.25rem; font-weight: 800; margin-bottom: 25px; z-index: 1;}
 
-        /* 平面數據卡片 */
         .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; z-index: 1;}
         .stat-card-plane {
-            background: #fff;
-            padding: 20px 10px;
-            border-radius: 20px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            position: relative;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.015);
+            background: #fff; padding: 20px 10px; border-radius: 20px; text-align: center;
+            display: flex; flex-direction: column; gap: 5px; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.015);
         }
         
         .stat-badge {
-            position: absolute; top: -10px; left: -10px;
-            width: 30px; height: 30px;
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
+            position: absolute; top: -10px; left: -10px; width: 30px; height: 30px;
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
             font-weight: 900; font-size: 0.9rem;
         }
 
-        .stat-label-plane { font-size: 0.85rem; font-weight: 900; color: var(--text-muted); }
+        .stat-label-plane { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); }
         .stat-value-plane { font-size: 2.4rem; font-weight: 900; color: var(--text-dark); letter-spacing: -1px; }
 
-        /* 可愛鼓勵小語 */
         .result-footer-cute {
-            width: 100%;
-            background: rgba(255,255,255,0.7);
-            padding: 15px;
-            border-radius: 15px;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 1rem;
-            font-weight: 800;
-            margin-bottom: 10px;
-            z-index: 1;
+            width: 100%; background: rgba(255,255,255,0.7); padding: 15px; border-radius: 15px;
+            text-align: center; color: var(--text-muted); margin-bottom: 10px; z-index: 1;
         }
+        .cute-main { font-size: 1.05rem; font-weight: 800; color: var(--text-dark); }
+        .cute-sub { font-size: 0.75rem; color: #a1a1aa; margin-top: 6px; font-weight: 700; }
 
         @media (max-height: 670px) {
             .timer-text { font-size: 5.5rem; }
             .result-title-card { font-size: 2rem; padding: 12px 30px; }
-            .bg-award-watermark { font-size: 20rem; top: 2dvh; }
+            .bg-award-watermark { font-size: 28rem; top: 8dvh; left: -5dvw;}
+            .card-name { font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -181,11 +150,14 @@
 
     <div id="setupView" class="view-section active-view">
         <div class="setup-header">
-            <h1 class="setup-title">設定各階段時間</h1>
+            <h1 class="setup-title">設定各階段參數</h1>
             <div class="total-summary">總時長：<span id="setupTotal" style="font-weight: 900; color: #000;">60</span> 分鐘</div>
         </div>
         <div class="inputs-list" id="inputsList"></div>
-        <div class="button-area"><button class="btn-finish" onclick="startWorkout()">完成並開始訓練</button></div>
+        <div class="button-area">
+            <button class="btn-finish" onclick="startWorkout()">完成並開始訓練</button>
+            <div class="version-text">v35</div>
+        </div>
     </div>
 
     <div id="workoutView" class="view-section">
@@ -241,7 +213,8 @@
             <div style="flex: 1;"></div>
 
             <div class="result-footer-cute">
-                今天也超級棒喔！( *ˊᵕˋ)✩︎‧₊
+                <div class="cute-main">今天也超級棒喔！( *ˊᵕˋ)✩︎‧₊</div>
+                <div class="cute-sub">記得好好休息，補充水分跟蛋白質</div>
             </div>
             
             <div class="control-group" style="width: 100%;">
@@ -283,14 +256,28 @@
         layer.classList.add('pulse-active');
     }
 
-    const list = document.getElementById('inputsList');
-    stages.forEach((s, i) => {
-        list.innerHTML += `<div class="setup-card" style="border-left-color: ${s.bg}"><div style="font-weight:900">${s.n}</div><input type="number" inputmode="numeric" id="t-${i}" value="${s.d}" oninput="calcTotal()" onclick="this.select()"><div style="text-align:right; font-weight:900; color:var(--text-muted); padding-left:5px">min</div></div>`;
-    });
+    // 修正：加回時間、坡度、速度輸入框
+    function initSetup() {
+        const list = document.getElementById('inputsList');
+        list.innerHTML = '';
+        stages.forEach((s, i) => {
+            list.innerHTML += `
+                <div class="setup-card" style="border-left-color: ${s.bg}">
+                    <div class="card-name">${s.n}</div>
+                    <div class="input-group"><span class="input-label">時間</span><input type="number" inputmode="numeric" id="d-${i}" value="${s.d}" oninput="calcTotal()" onclick="this.select()"></div>
+                    <div class="input-group"><span class="input-label">坡度</span><input type="number" inputmode="numeric" id="i-${i}" value="${s.i}" onclick="this.select()"></div>
+                    <div class="input-group"><span class="input-label">速度</span><input type="number" inputmode="decimal" id="s-${i}" value="${s.s}" step="0.1" onclick="this.select()"></div>
+                </div>`;
+        });
+        calcTotal();
+    }
 
     function calcTotal() {
         let t = 0;
-        stages.forEach((_, i) => { t += parseInt(document.getElementById(`t-${i}`).value) || 0; });
+        stages.forEach((_, i) => { 
+            const el = document.getElementById(`d-${i}`);
+            if(el) t += parseInt(el.value) || 0; 
+        });
         document.getElementById('setupTotal').innerText = t;
     }
 
@@ -305,8 +292,13 @@
         });
     }
 
+    // 修正：將時間、坡度、速度寫回陣列
     function startWorkout() {
-        stages.forEach((s, i) => { s.d = parseInt(document.getElementById(`t-${i}`).value) || 1; });
+        stages.forEach((s, i) => { 
+            s.d = parseInt(document.getElementById(`d-${i}`).value) || 1; 
+            s.i = document.getElementById(`i-${i}`).value || 0;
+            s.s = document.getElementById(`s-${i}`).value || 5;
+        });
         const grid = document.getElementById('stageGrid');
         grid.innerHTML = '';
         stages.forEach((s, i) => { grid.innerHTML += `<div class="stage-box s-${i}" onclick="jump(${i})">${s.n}</div>`; });
@@ -405,7 +397,7 @@
         } else { alert('請手動截圖保存結算畫面！'); }
     }
 
-    calcTotal();
+    initSetup();
 </script>
 </body>
 </html>
