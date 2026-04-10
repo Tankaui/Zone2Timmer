@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 專業訓練儀表板 V32.1</title>
+    <title>Zone2 專業訓練儀表板 V33</title>
     <style>
         :root {
             --bg-page: #f5f5f7;
@@ -37,7 +37,7 @@
         .view-section { display: none; flex-direction: column; height: 100%; padding: 10px 20px; opacity: 0; transition: opacity 0.4s ease-in-out; position: relative; }
         .view-section.active-view { display: flex; opacity: 1; }
 
-        /* --- 設定畫面 (維持原樣) --- */
+        /* --- 設定畫面 --- */
         .setup-header { text-align: center; padding: 15px 0; flex-shrink: 0; }
         .setup-title { font-size: 1.8rem; font-weight: 900; margin: 0; }
         .total-summary { font-size: 1rem; color: var(--text-muted); font-weight: 600; margin-top: 5px; }
@@ -45,7 +45,7 @@
         .setup-card { display: grid; grid-template-columns: 80px 1fr 40px; align-items: center; padding: 12px 20px; border-radius: 16px; background: #fff; flex-shrink: 0; border-left: 8px solid; }
         .setup-card input { border: 1px solid #d2d2d7; background: #f5f5f7; padding: 8px; border-radius: 10px; font-size: 1.2rem; text-align: center; font-weight: 900; width: 100%; }
 
-        /* --- 運動畫面 (維持原樣) --- */
+        /* --- 運動畫面 --- */
         .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 10px 0; flex-shrink: 0;}
         .stage-box { padding: 12px 2px; border-radius: 10px; text-align: center; font-weight: 900; font-size: 0.8rem; color: var(--text-muted); background: #fff; cursor: pointer; transition: 0.3s; }
         .stage-box.active { background: #1d1d1f !important; color: #fff !important; }
@@ -67,21 +67,22 @@
         .control-group { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; }
         .control-group button { font-size: 1.15rem; }
 
-        /* --- V32.1 結算畫面設計優化 --- */
+        /* --- 結算畫面設計優化 --- */
         #resultView {
             background-color: var(--bg-page);
-            padding: 0; /* 讓容器填滿 */
+            padding: 0; 
             overflow: hidden;
         }
 
-        /* 偏右上、柔和刷淡且超出的白色「獎」字 */
+        /* 修正：明顯的「獎」字浮水印，參考範例圖定位在偏左上，逆時針旋轉，顏色帶微暖橘色 */
         .bg-award-watermark {
             position: absolute; 
-            top: -10dvh; /* 往上移出畫面 */
-            right: -5dvw; /* 往右移出畫面 */
-            transform: rotate(15deg); /* 向右稍微旋轉 */
-            font-size: 40rem; font-weight: 900; 
-            color: rgba(255, 255, 255, 0.06); /* 改為白色、刷淡至 6% (極度低調質感) */
+            top: 5dvh; 
+            left: -15dvw; 
+            transform: rotate(-15deg); 
+            font-size: 26rem; /* 調整為適中偏大的尺寸 */
+            font-weight: 900; 
+            color: rgba(250, 120, 50, 0.06); /* 暖橘色，提高可見度 */
             pointer-events: none; user-select: none; z-index: 0;
             line-height: 1;
         }
@@ -95,10 +96,9 @@
             align-items: center;
             justify-content: center;
             z-index: 1;
-            /* 16:9 比例鎖定核心邏輯 */
             aspect-ratio: 16 / 9;
-            max-width: 90dvw; /* 最大寬度，防止小螢幕跑版 */
-            margin: auto; /* 垂直居中 */
+            max-width: 90dvw; 
+            margin: auto; 
             padding: 30px;
         }
 
@@ -111,12 +111,12 @@
             font-size: 2.5rem;
             font-weight: 900;
             letter-spacing: -1.5px;
-            margin-bottom: 25px; /* 修改：加大下方間距，不與色塊黏在一起 */
+            margin-bottom: 25px; 
             box-shadow: 0 5px 0 rgba(255,159,0,0.1);
             position: relative;
         }
 
-        /* 新增：平面色塊進度條 (Minimalist Progress Bar) */
+        /* 平面色塊進度條 */
         .result-progress-bar {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -129,10 +129,10 @@
         }
         .prog-dot { height: 100%; }
 
-        .result-main-text { color: var(--text-dark); font-size: 1.25rem; font-weight: 800; margin-bottom: 25px; }
+        .result-main-text { color: var(--text-dark); font-size: 1.25rem; font-weight: 800; margin-bottom: 25px; z-index: 1;}
 
         /* 平面數據卡片 */
-        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; }
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; z-index: 1;}
         .stat-card-plane {
             background: #fff;
             padding: 20px 10px;
@@ -144,7 +144,7 @@
             position: relative;
             box-shadow: 0 2px 10px rgba(0,0,0,0.015);
         }
-        /* 新增：數據卡片平面勳章小圖示 */
+        
         .stat-badge {
             position: absolute; top: -10px; left: -10px;
             width: 30px; height: 30px;
@@ -156,24 +156,24 @@
         .stat-label-plane { font-size: 0.85rem; font-weight: 900; color: var(--text-muted); }
         .stat-value-plane { font-size: 2.4rem; font-weight: 900; color: var(--text-dark); letter-spacing: -1px; }
 
-        /* 新增：底部專業數據提示欄 (淡灰卡片風) */
-        .result-footer-pro {
+        /* 可愛鼓勵小語 */
+        .result-footer-cute {
             width: 100%;
             background: rgba(255,255,255,0.7);
             padding: 15px;
             border-radius: 15px;
             text-align: center;
             color: var(--text-muted);
-            font-size: 0.9rem;
-            font-weight: 700;
-            line-height: 1.4;
+            font-size: 1rem;
+            font-weight: 800;
             margin-bottom: 10px;
+            z-index: 1;
         }
 
         @media (max-height: 670px) {
             .timer-text { font-size: 5.5rem; }
             .result-title-card { font-size: 2rem; padding: 12px 30px; }
-            .bg-award-watermark { font-size: 28rem; }
+            .bg-award-watermark { font-size: 20rem; top: 2dvh; }
         }
     </style>
 </head>
@@ -223,7 +223,7 @@
                 <div class="prog-dot" style="background:#ddd"></div> 
             </div>
 
-            <p class="result-main-text">今天完成了一場很棒的訓練</p>
+            <p class="result-main-text">記得補充蛋白質與水分！</p>
             
             <div class="result-grid">
                 <div class="stat-card-plane">
@@ -240,9 +240,8 @@
             
             <div style="flex: 1;"></div>
 
-            <div class="result-footer-pro">
-                <div>今天辛苦了</div>
-                <div style="font-size: 0.8rem; color: #a1a1aa; margin-top: 2px;">記得好好休息，補充水分跟蛋白質</div>
+            <div class="result-footer-cute">
+                今天也超級棒喔！( *ˊᵕˋ)✩︎‧₊
             </div>
             
             <div class="control-group" style="width: 100%;">
