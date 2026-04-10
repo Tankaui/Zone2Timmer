@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 V24</title>
+    <title>Zone2 訓練儀表板</title>
     <style>
         :root {
             --bg-page: #f5f5f7;
@@ -13,76 +13,65 @@
             --c1: #e0f2ff; --c2: #e0fff2; --c3: #e8f5e9; 
             --c4: #fff3e0; --c5: #fce4ec; --c6: #ffffff;
             --btn-blue-bg: #40b0e5;
-            --prep-bg: #e5e5e7; /* 預備階段的淺灰色 */
+            --prep-bg: #e5e5e7;
+            --flash-red: rgba(255, 59, 48, 0.3); /* 閃爍用的淡紅色 */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
             font-family: -apple-system, "Noto Sans TC", sans-serif; 
-            background-color: var(--bg-page); 
-            margin: 0; height: 100dvh; width: 100vw; overflow: hidden; 
-            display: flex; flex-direction: column;
+            background-color: var(--bg-page); margin: 0; height: 100dvh; width: 100vw; 
+            overflow: hidden; display: flex; flex-direction: column;
             padding: env(safe-area-inset-top) 15px env(safe-area-inset-bottom) 15px;
         }
 
         .view-section { display: none; flex-direction: column; height: 100%; }
         #setupView { display: flex; }
 
+        /* --- 設定畫面 --- */
         .setup-header { text-align: center; padding: 10px 0; flex-shrink: 0; }
         .setup-title { font-size: 1.4rem; font-weight: 900; margin: 0; }
         .total-summary { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; font-weight: 600; }
         .total-big { color: var(--text-dark); font-size: 1.2rem; font-weight: 900; }
-
         .inputs-list { flex: 1; display: flex; flex-direction: column; gap: 6px; padding-bottom: 5px; }
         .setup-card {
-            display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; 
-            align-items: center; gap: 8px; padding: 8px 15px;
-            border-radius: 12px; background: #fff;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03); flex: 1; min-height: 0;
+            display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; align-items: center; gap: 8px; 
+            padding: 8px 15px; border-radius: 12px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.03); flex: 1; min-height: 0;
         }
-        .card-name { font-weight: 900; font-size: 1rem; color: var(--text-dark); }
-        .input-group { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-        .input-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); }
-        .setup-card input { 
-            border: 1px solid #d2d2d7; background: #f5f5f7; padding: 4px; 
-            border-radius: 6px; font-size: 1rem; text-align: center; font-weight: 900; width: 100%;
-        }
+        .setup-card input { border: 1px solid #d2d2d7; background: #f5f5f7; padding: 4px; border-radius: 6px; font-size: 1rem; text-align: center; font-weight: 900; width: 100%; }
 
+        /* --- 運動畫面 --- */
         .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; padding: 10px 0; flex-shrink: 0;}
-        .stage-box {
-            padding: 10px 0; border-radius: 8px; text-align: center;
-            font-weight: 900; font-size: 0.75rem; color: var(--text-muted);
-            background: #fff; cursor: pointer;
-        }
+        .stage-box { padding: 10px 0; border-radius: 8px; text-align: center; font-weight: 900; font-size: 0.75rem; color: var(--text-muted); background: #fff; cursor: pointer; }
         .stage-box.active { background: #1d1d1f !important; color: #fff !important; }
 
         .main-display {
-            flex: 1; margin: 5px 0; border-radius: 24px;
-            display: flex; flex-direction: column; justify-content: center;
-            padding: 20px; background-color: var(--card-white);
-            position: relative; overflow: hidden;
-            transition: background-color 0.4s ease, opacity 0.05s linear;
+            flex: 1; margin: 5px 0; border-radius: 24px; display: flex; flex-direction: column; 
+            justify-content: center; padding: 20px; background-color: var(--card-white);
+            position: relative; overflow: hidden; transition: background-color 0.15s ease;
         }
-        .flash-effect { opacity: 0.2; }
+        
+        /* 強化閃爍效果 */
+        .flash-active { background-color: var(--flash-red) !important; }
 
         .timer-text { font-size: 6rem; font-weight: 900; line-height: 1; text-align: center; letter-spacing: -2px; }
         .info-row { font-size: 1.3rem; font-weight: 900; line-height: 1.7; margin-top: 10px; }
 
+        /* --- 按鈕 --- */
         .button-area { padding: 10px 0; flex-shrink: 0; }
-        button { 
-            border: none; padding: 15px; font-size: 1.2rem; font-weight: 900; border-radius: 18px;
-            cursor: pointer; width: 100%; height: 55px; 
-        }
+        button { border: none; padding: 15px; font-size: 1.2rem; font-weight: 900; border-radius: 18px; cursor: pointer; width: 100%; height: 55px; transition: opacity 0.2s; }
         .btn-finish, .btn-start { background: var(--btn-blue-bg); color: #fff; }
         .btn-gray { background: #e8e8ed; color: var(--text-dark); }
+        .btn-red { background: #ff3b30 !important; color: #fff !important; }
         .control-group { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
 
-        @media (max-height: 670px) {
-            .setup-title { font-size: 1.1rem; }
-            .timer-text { font-size: 4.5rem; }
-            .card-name { font-size: 0.8rem; }
-        }
+        /* --- 結算畫面 --- */
+        .result-card { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #fff; border-radius: 24px; padding: 30px; margin: 10px 0; text-align: center; }
+        .result-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 10px; color: var(--btn-blue-bg); }
+        .result-val { font-size: 4.5rem; font-weight: 900; margin: 20px 0; }
+
+        @media (max-height: 670px) { .timer-text { font-size: 4.5rem; } }
     </style>
 </head>
 <body>
@@ -110,8 +99,18 @@
         <div class="button-area">
             <div class="control-group">
                 <button id="playBtn" class="btn-start" onclick="toggle()">開始運動</button>
-                <button class="btn-gray" onclick="location.reload()">回設定</button>
+                <button id="sideBtn" class="btn-gray" onclick="handleSideBtn()">回設定</button>
             </div>
+        </div>
+    </div>
+
+    <div id="resultView" class="view-section">
+        <div class="result-card">
+            <div class="result-title">訓練完成</div>
+            <div style="font-weight: 900; color: var(--text-muted);">本次運動總時長</div>
+            <div id="resTotalTime" class="result-val">00:00</div>
+            <div style="flex: 1;"></div>
+            <button class="btn-finish" onclick="location.reload()">回首頁</button>
         </div>
     </div>
 
@@ -127,8 +126,7 @@
 
     let stages = [...originalStages];
     let idx = 0, sec = 0, total = 0, run = false, timerInterval;
-    let isPrep = false; // 是否在10秒預備期
-    let prepSec = 10;
+    let isPrep = false, prepSec = 10;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playBeep(freq, duration) {
@@ -141,10 +139,10 @@
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    function flashDisplay() {
+    function flashRed() {
         const el = document.getElementById('mainDisplay');
-        el.classList.add('flash-effect');
-        setTimeout(() => el.classList.remove('flash-effect'), 100);
+        el.classList.add('flash-active');
+        setTimeout(() => el.classList.remove('flash-active'), 150);
     }
 
     function initSetup() {
@@ -174,43 +172,54 @@
         document.getElementById('setupTotal').innerText = t;
     }
 
+    function switchView(id) {
+        document.querySelectorAll('.view-section').forEach(v => v.style.display = 'none');
+        document.getElementById(id).style.display = 'flex';
+    }
+
     function startWorkout() {
         stages.forEach((s, i) => {
             s.d = parseInt(document.getElementById(`d-${i}`).value) || 1;
             s.i = document.getElementById(`i-${i}`).value || 0;
             s.s = document.getElementById(`s-${i}`).value || 5;
         });
-        
         const grid = document.getElementById('stageGrid');
         grid.innerHTML = '';
-        stages.forEach((s, i) => {
-            grid.innerHTML += `<div class="stage-box s-${i}" onclick="jump(${i})">${s.n}</div>`;
-        });
-
-        idx = 0; sec = 0; total = 0;
-        isPrep = true; prepSec = 10; // 第一個階段也給預備時間
-        document.getElementById('setupView').style.display = 'none';
-        document.getElementById('workoutView').style.display = 'flex';
+        stages.forEach((s, i) => { grid.innerHTML += `<div class="stage-box s-${i}" onclick="jump(${i})">${s.n}</div>`; });
+        idx = 0; sec = 0; total = 0; isPrep = true; prepSec = 10;
+        switchView('workoutView');
         updateUI();
+    }
+
+    function handleSideBtn() {
+        const sideBtn = document.getElementById('sideBtn');
+        if (sideBtn.classList.contains('btn-red')) {
+            showSummary();
+        } else {
+            location.reload();
+        }
+    }
+
+    function showSummary() {
+        clearInterval(timerInterval);
+        document.getElementById('resTotalTime').innerText = fmt(total);
+        switchView('resultView');
     }
 
     function updateUI() {
         const s = stages[idx];
         const display = document.getElementById('mainDisplay');
         const infoRow = document.getElementById('infoRow');
-        
-        document.querySelectorAll('.stage-box').forEach((b, i) => {
-            if (i === idx) b.classList.add('active'); else b.classList.remove('active');
-        });
+        document.querySelectorAll('.stage-box').forEach((b, i) => { if (i === idx) b.classList.add('active'); else b.classList.remove('active'); });
 
         if (isPrep) {
             display.style.backgroundColor = "var(--prep-bg)";
             document.getElementById('curStageName').innerText = `即將進入：${s.n}`;
             document.getElementById('timer').innerText = `00:${prepSec.toString().padStart(2, '0')}`;
-            infoRow.style.visibility = "hidden"; // 預備時隱藏累積數據，專注倒數
+            infoRow.style.visibility = "hidden";
         } else {
             display.style.backgroundColor = s.bg;
-            document.getElementById('curStageName').innerText = `${s.n} (剩餘時間)`;
+            document.getElementById('curStageName').innerText = `${s.n}`;
             document.getElementById('timer').innerText = fmt((s.d * 60) - sec);
             infoRow.style.visibility = "visible";
             document.getElementById('incline').innerText = s.i;
@@ -223,27 +232,18 @@
         if (isPrep) {
             prepSec--;
             if (run && prepSec <= 3 && prepSec > 0) playBeep(800, 0.1);
-            if (prepSec <= 0) {
-                isPrep = false;
-                if (run) playBeep(1200, 0.4);
-            }
+            if (prepSec <= 0) { isPrep = false; if (run) playBeep(1200, 0.4); }
         } else {
             sec++; total++;
             const s = stages[idx];
             const rem = (s.d * 60) - sec;
-
             if (run) {
-                if (rem === 30) { playBeep(600, 0.2); flashDisplay(); }
-                if (rem <= 5 && rem > 0) { playBeep(1000, 0.1); flashDisplay(); }
+                if (rem === 30) { playBeep(600, 0.2); flashRed(); }
+                if (rem <= 5 && rem > 0) { playBeep(1000, 0.1); flashRed(); }
             }
-
             if (sec >= s.d * 60) {
-                if (idx < 5) { 
-                    idx++; sec = 0; 
-                    isPrep = true; prepSec = 10; 
-                } else { 
-                    clearInterval(timerInterval); alert("訓練完成！"); location.reload(); 
-                }
+                if (idx < 5) { idx++; sec = 0; isPrep = true; prepSec = 10; } 
+                else { showSummary(); return; }
             }
         }
         updateUI();
@@ -252,21 +252,19 @@
     function toggle() {
         run = !run;
         const btn = document.getElementById('playBtn');
+        const sideBtn = document.getElementById('sideBtn');
         if (run) {
             btn.innerText = "暫停"; btn.style.background = "#ff4d4f";
+            sideBtn.innerText = "回設定"; sideBtn.classList.remove('btn-red');
             timerInterval = setInterval(tick, 1000);
         } else {
-            btn.innerText = "開始運動"; btn.style.background = "var(--btn-blue-bg)";
+            btn.innerText = "繼續運動"; btn.style.background = "var(--btn-blue-bg)";
+            sideBtn.innerText = "結束運動"; sideBtn.classList.add('btn-red');
             clearInterval(timerInterval);
         }
     }
 
-    function jump(i) {
-        idx = i; sec = 0; 
-        isPrep = true; prepSec = 10; // 跳轉也強制預備 10 秒
-        updateUI();
-    }
-
+    function jump(i) { idx = i; sec = 0; isPrep = true; prepSec = 10; updateUI(); }
     function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
 
     initSetup();
