@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>跑步機訓練器 V12</title>
+    <style>
+        :root {
+            --bg-page: #f5f5f7;
+            --text-dark: #1d1d1f;
+            --text-muted: #86868b;
+            --card-white: #ffffff;
+            --c1: #e0f2ff; --c1-t: #0056b3;
+            --c2: #e0fff2; --c2-t: #008577;
+            --c3: #e8f5e9; --c3-t: #2e7d32;
+            --c4: #fff3e0; --c4-t: #ef6c00;
+            --c5: #fce4ec; --c5-t: #c2185b;
+            --c6: #ffffff; --c6-t: #1d1d1f;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: -apple-system, "Noto Sans TC", sans-serif; 
+            background-color: var(--bg-page); 
+            color: var(--text-dark); 
+            margin: 0; height: 100vh; width: 100vw; overflow: hidden; 
+            padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* --- 視圖切換 --- */
+        .view-section { display: none; flex-direction: column; height: 100%; padding: 20px; }
+        #setupView { display: flex; }
+
+        /* --- 設定畫面 --- */
+        .setup-header { text-align: center; margin-bottom: 10px; }
+        .setup-title { font-size: 1.8rem; font-weight: 800; margin: 0; }
+        .total-summary { font-size: 1rem; color: var(--text-muted); font-weight: 600; margin-top: 5px; }
+        .total-big { color: #000; font-size: 1.4rem; font-weight: 800; }
+        .inputs-list { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding: 10px 0; }
+        .setup-card {
+            display: grid; grid-template-columns: 80px 1fr 40px; align-items: center;
+            padding: 15px 20px; border-radius: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+        .setup-card input { border: 1px solid #d2d2d7; padding: 10px; border-radius: 10px; font-size: 1.2rem; text-align: center; font-weight: 700; width: 100%; }
+
+        /* --- 運動畫面 --- */
+        .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 10px 0; }
+        .stage-box {
+            padding: 12px 2px; border-radius: 10px; text-align: center;
+            font-weight: bold; font-size: 0.8rem; color: var(--text-muted);
+            background: rgba(255,255,255,0.7); cursor: pointer; transition: 0.3s;
+        }
+        .stage-box.active { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .stage-box.active.s0 { background: var(--c1); color: var(--c1-t); }
+        .stage-box.active.s1 { background: var(--c2); color: var(--c2-t); }
+        .stage-box.active.s2 { background: var(--c3); color: var(--c3-t); }
+        .stage-box.active.s3 { background: var(--c4); color: var(--c4-t); }
+        .stage-box.active.s4 { background: var(--c5); color: var(--c5-t); }
+        .stage-box.active.s5 { background: var(--c6); color: var(--c6-t); border: 1px solid #d2d2d7; }
+
+        .main-display {
+            flex: 1; margin: 10px 0; border-radius: 28px;
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 30px; background-color: var(--card-white);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.04); transition: background-color 0.6s ease;
+        }
+        .timer-text { font-size: 7.5rem; font-weight: 900; line-height: 1.1; margin: 10px 0; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
+        .info-row { font-size: 1.5rem; font-weight: 600; line-height: 1.8; }
+
+        /* --- 結算畫面 --- */
+        .result-card { background: #fff; border-radius: 32px; padding: 40px 30px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .result-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 30px; }
+        .result-stat { margin: 20px 0; }
+        .result-label { font-size: 1.1rem; color: var(--text-muted); font-weight: 600; }
+        .result-value { font-size: 3.5rem; font-weight: 900; color: #000; margin-top: 5px; }
+
+        /* --- 按鈕系統 --- */
+        .btn-black { background: #1d1d1f; color: #fff; border: none; padding: 20px; font-size: 1.3rem; font-weight: bold; border-radius: 20px; cursor: pointer; transition: 0.2s; }
+        .btn-gray { background: #e8e8ed; color: #1d1d1f; border: none; padding: 20px; font-size: 1.3rem; font-weight: bold; border-radius: 20px; cursor: pointer; }
+        .btn-red { background: #ff3b30 !important; color: #fff !important; }
+        
+        /* 修正高度與佈局 */
+        .control-group { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-top: 10px; min-height: 70px; }
+        .control-group button { height: 70px; display: flex; align-items: center; justify-content: center; }
+
+        @media (max-width: 400px) { .timer-text { font-size: 5.5rem; } .info-row { font-size: 1.2rem; } .result-value { font-size: 2.5rem; } }
+    </style>
+</head>
+<body>
+
+    <div id="setupView" class="view-section">
+        <div class="setup-header">
+            <h1 class="setup-title">設定階段長度</h1>
+            <div class="total-summary">總時長：<span class="total-big" id="setupTotal">60</span> 分鐘</div>
+        </div>
+        <div class="inputs-list" id="inputsList"></div>
+        <button class="btn-black" onclick="startWorkout()">完成並開始</button>
+    </div>
+
+    <div id="workoutView" class="view-section">
+        <div class="stage-grid">
+            <div class="stage-box s0" onclick="jump(0)">暖身</div>
+            <div class="stage-box s1" onclick="jump(1)">預熱</div>
+            <div class="stage-box s2" onclick="jump(2)">挑戰</div>
+            <div class="stage-box s3" onclick="jump(3)">魔王</div>
+            <div class="stage-box s4" onclick="jump(4)">高位</div>
+            <div class="stage-box s5" onclick="jump(5)">緩和</div>
+        </div>
+        <div class="main-display" id="mainDisplay">
+            <div style="font-weight: bold; color: var(--text-muted);">區段剩餘時間</div>
+            <div class="timer-text" id="timer">00:00</div>
+            <div class="info-row">
+                <div>坡度：<span id="incline">--</span>%</div>
+                <div>速度：<span id="speed">--</span> km/h</div>
+                <div>心率：<span id="hr">--</span></div>
+                <div>累積：<span id="totalTime">00:00</span></div>
+            </div>
+        </div>
+        <div class="control-group">
+            <button id="playBtn" class="btn-black" onclick="toggle()">開始運動</button>
+            <button id="sideBtn" class="btn-gray" onclick="handleSideBtn()">回設定</button>
+        </div>
+    </div>
+
+    <div id="resultView" class="view-section">
+        <div class="result-card">
+            <div class="result-title">訓練完成</div>
+            <div class="result-stat">
+                <div class="result-label">實質累積運動時間</div>
+                <div id="resTotalTime" class="result-value">00:00</div>
+            </div>
+            <div class="result-stat">
+                <div class="result-label">最高挑戰階段</div>
+                <div id="resMaxStage" class="result-value">--</div>
+            </div>
+            <div style="flex: 1;"></div>
+            <button class="btn-black" onclick="goBackToSetup()">返回主選單</button>
+        </div>
+    </div>
+
+<script>
+    const stages = [
+        { n: "暖身", d: 8, i: "3", s: "5", h: "第 1 區間", bg: "#e0f2ff" },
+        { n: "預熱", d: 7, i: "8", s: "5.5", h: "第 2 區間", bg: "#e0fff2" },
+        { n: "挑戰", d: 15, i: "12", s: "5", h: "第 3 區間", bg: "#e8f5e9" },
+        { n: "魔王", d: 15, i: "15", s: "4.5", h: "第 3 區間+", bg: "#fff3e0" },
+        { n: "高位", d: 10, i: "9", s: "6", h: "第 2 → 3 區間", bg: "#fce4ec" },
+        { n: "緩和", d: 5, i: "0", s: "5", h: "回到第 1 區間", bg: "#ffffff" }
+    ];
+
+    let idx = 0, sec = 0, total = 0, run = false, timerInterval, wakeLock = null, maxIdxReached = 0;
+
+    const list = document.getElementById('inputsList');
+    stages.forEach((s, i) => {
+        list.innerHTML += `
+            <div class="setup-card" style="background:${s.bg}">
+                <div style="font-weight:800">${s.n}</div>
+                <input type="number" id="t-${i}" value="${s.d}" oninput="calcTotal()">
+                <div style="text-align:right; font-weight:600; font-size:0.9rem">分鐘</div>
+            </div>
+        `;
+    });
+
+    function calcTotal() {
+        let t = 0;
+        stages.forEach((_, i) => { t += parseInt(document.getElementById(`t-${i}`).value) || 0; });
+        document.getElementById('setupTotal').innerText = t;
+    }
+
+    async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
+
+    function switchView(viewId) {
+        document.querySelectorAll('.view-section').forEach(v => v.style.display = 'none');
+        document.getElementById(viewId).style.display = 'flex';
+    }
+
+    function startWorkout() {
+        stages.forEach((s, i) => { s.d = parseInt(document.getElementById(`t-${i}`).value) || 1; });
+        idx = 0; sec = 0; total = 0; maxIdxReached = 0;
+        switchView('workoutView');
+        resetUI();
+    }
+
+    function handleSideBtn() {
+        if (!run && total > 0) { showSummary(); } else { goBackToSetup(); }
+    }
+
+    function showSummary() {
+        clearInterval(timerInterval);
+        if (wakeLock) wakeLock.release();
+        document.getElementById('resTotalTime').innerText = fmt(total);
+        document.getElementById('resMaxStage').innerText = stages[maxIdxReached].n;
+        switchView('resultView');
+    }
+
+    function goBackToSetup() {
+        clearInterval(timerInterval);
+        if (wakeLock) wakeLock.release();
+        switchView('setupView');
+    }
+
+    function updateUI() {
+        const s = stages[idx];
+        const rem = (s.d * 60) - sec;
+        document.querySelectorAll('.stage-box').forEach((b, i) => b.classList.toggle('active', i === idx));
+        document.getElementById('mainDisplay').style.backgroundColor = s.bg;
+        document.getElementById('timer').innerText = fmt(rem);
+        document.getElementById('incline').innerText = s.i;
+        document.getElementById('speed').innerText = s.s;
+        document.getElementById('hr').innerText = s.h;
+        document.getElementById('totalTime').innerText = fmt(total);
+    }
+
+    function toggle() {
+        run = !run;
+        const btn = document.getElementById('playBtn');
+        const sideBtn = document.getElementById('sideBtn');
+        if (run) {
+            requestWakeLock();
+            btn.innerText = "暫停"; btn.classList.add('btn-red');
+            sideBtn.innerText = "回設定"; sideBtn.classList.remove('btn-red');
+            timerInterval = setInterval(() => {
+                sec++; total++;
+                if (sec >= stages[idx].d * 60) {
+                    if (idx < 5) { idx++; sec = 0; if(idx > maxIdxReached) maxIdxReached = idx; } 
+                    else { showSummary(); return; }
+                }
+                updateUI();
+            }, 1000);
+        } else {
+            btn.innerText = "繼續運動"; btn.classList.remove('btn-red');
+            sideBtn.innerText = "結束運動"; sideBtn.classList.add('btn-red');
+            clearInterval(timerInterval);
+        }
+    }
+
+    function jump(i) {
+        idx = i; sec = 0; if(idx > maxIdxReached) maxIdxReached = idx; updateUI();
+    }
+
+    function resetUI() {
+        clearInterval(timerInterval);
+        run = false;
+        const btn = document.getElementById('playBtn');
+        const sideBtn = document.getElementById('sideBtn');
+        btn.innerText = "開始運動"; btn.classList.remove('btn-red');
+        sideBtn.innerText = "回設定"; sideBtn.classList.remove('btn-red');
+        updateUI();
+    }
+
+    function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
+
+    calcTotal();
+</script>
+</body>
+</html>
