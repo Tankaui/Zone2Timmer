@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 專業儀表板 V31</title>
+    <title>Zone2 專業訓練儀表板 V32</title>
     <style>
         :root {
             --bg-page: #f5f5f7;
             --card-white: #ffffff;
             --text-dark: #1d1d1f;
             --text-muted: #86868b;
+            --accent: #40b0e5; /* 藍色 */
             --c1: #e0f2ff; --c1-t: #007aff;
             --c2: #e0fff2; --c2-t: #00af91;
             --c3: #e8f5e9; --c3-t: #34c759;
@@ -30,21 +31,21 @@
             background-color: var(--bg-page); color: var(--text-dark); 
             margin: 0; height: 100dvh; width: 100vw; overflow: hidden; 
             display: flex; flex-direction: column;
-            padding: env(safe-area-inset-top) 15px env(safe-area-inset-bottom) 15px;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         .view-section { display: none; flex-direction: column; height: 100%; padding: 10px 20px; opacity: 0; transition: opacity 0.4s ease-in-out; position: relative; }
         .view-section.active-view { display: flex; opacity: 1; }
 
-        /* --- 設定畫面 --- */
-        .setup-header { text-align: center; padding: 10px 0; flex-shrink: 0; }
+        /* --- 設定畫面 (維持原樣) --- */
+        .setup-header { text-align: center; padding: 15px 0; flex-shrink: 0; }
         .setup-title { font-size: 1.8rem; font-weight: 900; margin: 0; }
         .total-summary { font-size: 1rem; color: var(--text-muted); font-weight: 600; margin-top: 5px; }
         .inputs-list { flex: 1; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding: 5px 0; justify-content: center; }
-        .setup-card { display: grid; grid-template-columns: 80px 1fr 40px; align-items: center; padding: 12px 20px; border-radius: 16px; background: #fff; flex-shrink: 0; }
+        .setup-card { display: grid; grid-template-columns: 80px 1fr 40px; align-items: center; padding: 12px 20px; border-radius: 16px; background: #fff; flex-shrink: 0; border-left: 8px solid; }
         .setup-card input { border: 1px solid #d2d2d7; background: #f5f5f7; padding: 8px; border-radius: 10px; font-size: 1.2rem; text-align: center; font-weight: 900; width: 100%; }
 
-        /* --- 運動畫面 --- */
+        /* --- 運動畫面 (維持原樣) --- */
         .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 10px 0; flex-shrink: 0;}
         .stage-box { padding: 12px 2px; border-radius: 10px; text-align: center; font-weight: 900; font-size: 0.8rem; color: var(--text-muted); background: #fff; cursor: pointer; transition: 0.3s; }
         .stage-box.active { background: #1d1d1f !important; color: #fff !important; }
@@ -63,28 +64,117 @@
         .btn-finish, .btn-start { background: var(--btn-blue-bg); color: #fff; }
         .btn-gray { background: #e8e8ed; color: var(--text-dark); }
         .btn-red { background: #ff3b30 !important; color: #fff !important; }
-        
-        /* 修正按鈕不換行 */
         .control-group { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; }
         .control-group button { font-size: 1.15rem; }
 
-        /* --- 結算畫面特化 --- */
-        #resultView { background-color: var(--bg-page); }
-        /* 背景「獎」字水印 */
-        .bg-award-watermark {
-            position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg);
-            font-size: 25rem; font-weight: 900; color: rgba(255, 159, 0, 0.08);
-            pointer-events: none; user-select: none; z-index: 0;
+        /* --- V32 結算畫面設計優化 --- */
+        #resultView {
+            background-color: var(--bg-page);
+            padding: 0; /* 讓容器填滿 */
+            overflow: hidden;
         }
-        .result-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 20px; z-index: 1; }
-        .result-title-card { background-color: var(--res-title-bg); color: var(--res-title-text); padding: 15px 30px; border-radius: 15px; font-size: 2.2rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 5px; box-shadow: 0 4px 0 rgba(255,159,0,0.15); }
-        .result-main-text { color: var(--text-dark); font-size: 1.2rem; font-weight: 700; margin-bottom: 5px; }
-        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin: 20px 0; }
-        .stat-card-plane { background: #fff; padding: 20px 10px; border-radius: 20px; text-align: center; display: flex; flex-direction: column; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-        .stat-label-plane { font-size: 0.85rem; font-weight: 900; color: var(--text-muted); }
-        .stat-value-plane { font-size: 2.2rem; font-weight: 900; color: var(--text-dark); letter-spacing: -1px; }
 
-        @media (max-height: 670px) { .timer-text { font-size: 5rem; } .result-title-card { font-size: 1.8rem; } .bg-award-watermark { font-size: 18rem; } }
+        /* 偏右上、柔和刷淡且超出的白色「獎」字 */
+        .bg-award-watermark {
+            position: absolute; 
+            top: -10dvh; /* 往上移出畫面 */
+            right: -5dvw; /* 往右移出畫面 */
+            transform: rotate(15deg); /* 向右稍微旋轉 */
+            font-size: 40rem; font-weight: 900; 
+            color: rgba(255, 255, 255, 0.06); /* 改為白色、刷淡至 6% (極度低調質感) */
+            pointer-events: none; user-select: none; z-index: 0;
+            line-height: 1;
+        }
+
+        .result-container {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            /* 16:9 比例鎖定核心邏輯 */
+            aspect-ratio: 16 / 9;
+            max-width: 90dvw; /* 最大寬度，防止小螢幕跑版 */
+            margin: auto; /* 垂直居中 */
+            padding: 30px;
+        }
+
+        /* 亮黃色標題勳章風 */
+        .result-title-card {
+            background-color: var(--res-title-bg);
+            color: var(--res-title-text);
+            padding: 18px 40px;
+            border-radius: 18px;
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            margin-bottom: 5px;
+            box-shadow: 0 5px 0 rgba(255,159,0,0.1);
+            position: relative;
+        }
+
+        /* 新增：平面色塊進度條 (Minimalist Progress Bar) */
+        .result-progress-bar {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0px;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+        .prog-dot { height: 100%; }
+
+        .result-main-text { color: var(--text-dark); font-size: 1.25rem; font-weight: 800; margin-bottom: 25px; }
+
+        /* 平面數據卡片 */
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; }
+        .stat-card-plane {
+            background: #fff;
+            padding: 20px 10px;
+            border-radius: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.015);
+        }
+        /* 新增：數據卡片平面勳章小圖示 */
+        .stat-badge {
+            position: absolute; top: -10px; left: -10px;
+            width: 30px; height: 30px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 0.9rem;
+        }
+
+        .stat-label-plane { font-size: 0.85rem; font-weight: 900; color: var(--text-muted); }
+        .stat-value-plane { font-size: 2.4rem; font-weight: 900; color: var(--text-dark); letter-spacing: -1px; }
+
+        /* 新增：底部專業數據提示欄 (淡灰卡片風) */
+        .result-footer-pro {
+            width: 100%;
+            background: rgba(255,255,255,0.7);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        @media (max-height: 670px) {
+            .timer-text { font-size: 5.5rem; }
+            .result-title-card { font-size: 2rem; padding: 12px 30px; }
+            .bg-award-watermark { font-size: 28rem; }
+        }
     </style>
 </head>
 <body>
@@ -123,24 +213,40 @@
         
         <div class="result-container">
             <div class="result-title-card">訓練完成</div>
-            <p class="result-main-text">記得補充蛋白質與水分！</p>
+            
+            <div class="result-progress-bar">
+                <div class="prog-dot" style="background:var(--c1)"></div>
+                <div class="prog-dot" style="background:var(--c2)"></div>
+                <div class="prog-dot" style="background:var(--c3)"></div>
+                <div class="prog-dot" style="background:var(--c4)"></div>
+                <div class="prog-dot" style="background:var(--c5)"></div>
+                <div class="prog-dot" style="background:#ddd"></div> </div>
+
+            <p class="result-main-text">记得補充蛋白質與水分！</p>
             
             <div class="result-grid">
                 <div class="stat-card-plane">
+                    <div class="stat-badge" style="background:var(--c2); color:var(--c2-t);">#</div>
                     <span class="stat-label-plane">累積總時長</span>
                     <span id="resTotalTime" class="stat-value-plane">00:00</span>
                 </div>
                 <div class="stat-card-plane">
+                    <div class="stat-badge" style="background:var(--c4); color:var(--c4-t);">!</div>
                     <span class="stat-label-plane">最高挑戰</span>
                     <span id="resMaxStage" class="stat-value-plane" style="font-size: 1.6rem;">暖身</span>
                 </div>
             </div>
             
             <div style="flex: 1;"></div>
+
+            <div class="result-footer-pro">
+                <div>本次訓練達成率 100%</div>
+                <div style="font-size: 0.8rem; color: #a1a1aa; margin-top: 2px;">Zone2 專業健康管理</div>
+            </div>
             
             <div class="control-group" style="width: 100%;">
                 <button class="btn-finish" onclick="location.reload()">返回設定</button>
-                <button class="btn-gray" onclick="shareResult()">分享或儲存</button>
+                <button class="btn-gray" onclick="shareResult()">分享與儲存</button>
             </div>
         </div>
     </div>
@@ -179,7 +285,7 @@
 
     const list = document.getElementById('inputsList');
     stages.forEach((s, i) => {
-        list.innerHTML += `<div class="setup-card" style="border-left: 8px solid ${s.bg}"><div style="font-weight:900">${s.n}</div><input type="number" inputmode="numeric" id="t-${i}" value="${s.d}" oninput="calcTotal()" onclick="this.select()"><div style="text-align:right; font-weight:900; color:var(--text-muted); padding-left:5px">min</div></div>`;
+        list.innerHTML += `<div class="setup-card" style="border-left-color: ${s.bg}"><div style="font-weight:900">${s.n}</div><input type="number" inputmode="numeric" id="t-${i}" value="${s.d}" oninput="calcTotal()" onclick="this.select()"><div style="text-align:right; font-weight:900; color:var(--text-muted); padding-left:5px">min</div></div>`;
     });
 
     function calcTotal() {
@@ -293,7 +399,7 @@
     function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
 
     async function shareResult() {
-        const text = `Zone2訓練達成！總時間：${fmt(total)}，最高挑戰：${stages[maxIdxReached].n}。記得補充蛋白質！`;
+        const text = `Zone2訓練達成！總時間：${fmt(total)}，最高挑戰：${stages[maxIdxReached].n}。也別忘了補充蛋白質與水分！`;
         if (navigator.share) {
             try { await navigator.share({ title: 'Zone2 訓練結果', text: text, url: window.location.href }); } catch (err) {}
         } else { alert('請截圖保存結算畫面！'); }
