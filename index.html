@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 V40</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
+    <title>Zone2 訓練儀表板 V41</title>
     <style>
         :root {
             --bg-page: #f5f5f7;
@@ -27,7 +24,8 @@
             --res-title-text: #ff9f00;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* 核心修正：touch-action: manipulation 可以徹底關閉手機雙擊放大的預設行為 */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         
         body { 
             font-family: -apple-system, "Noto Sans TC", sans-serif; 
@@ -35,6 +33,7 @@
             margin: 0; height: 100dvh; width: 100vw; overflow: hidden; 
             display: flex; flex-direction: column;
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            overscroll-behavior-y: none; /* 防止 Safari 的橡皮筋下拉重整效果 */
         }
 
         .view-section { display: none; flex-direction: column; height: 100%; padding: 10px 20px; opacity: 0; transition: opacity 0.4s ease-in-out; position: relative; }
@@ -54,7 +53,8 @@
 
         /* --- 運動畫面 --- */
         .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 10px 0; flex-shrink: 0;}
-        .stage-box { padding: 12px 2px; border-radius: 10px; text-align: center; font-weight: 900; font-size: 0.8rem; color: var(--text-muted); background: #fff; cursor: pointer; transition: 0.3s; }
+        /* 加入 user-select: none 防止快速點擊時反白文字 */
+        .stage-box { padding: 12px 2px; border-radius: 10px; text-align: center; font-weight: 900; font-size: 0.8rem; color: var(--text-muted); background: #fff; cursor: pointer; transition: 0.3s; -webkit-user-select: none; user-select: none; }
         .stage-box.active { background: #1d1d1f !important; color: #fff !important; }
         .main-display { flex: 1; margin: 10px 0; border-radius: 28px; display: flex; flex-direction: column; justify-content: center; padding: 30px; background-color: var(--card-white); position: relative; overflow: hidden; transition: background-color 0.8s ease; }
         .timer-text { font-size: 7rem; font-weight: 900; line-height: 1; margin: 10px 0; tabular-nums; letter-spacing: -2px; text-align: center; }
@@ -66,7 +66,8 @@
         .pulse-active { animation: soft-pulse 0.4s ease-in-out; }
 
         .button-area { padding: 15px 0; flex-shrink: 0; width: 100%; }
-        button { border: none; padding: 18px; font-size: 1.3rem; font-weight: 900; border-radius: 20px; cursor: pointer; width: 100%; height: 65px; transition: opacity 0.2s; white-space: nowrap; }
+        /* 加入 user-select: none 防止快速點擊時反白文字 */
+        button { border: none; padding: 18px; font-size: 1.3rem; font-weight: 900; border-radius: 20px; cursor: pointer; width: 100%; height: 65px; transition: opacity 0.2s; white-space: nowrap; -webkit-user-select: none; user-select: none; }
         button:active { opacity: 0.8; }
         .btn-finish, .btn-start { background: var(--btn-blue-bg); color: #fff; }
         .btn-gray { background: #e8e8ed; color: var(--text-dark); }
@@ -75,19 +76,22 @@
         .control-group button { font-size: 1.15rem; }
 
         /* --- 結算畫面 --- */
-        #resultView { background-color: var(--bg-page); padding: 0; overflow: hidden; }
+        #resultView {
+            background-color: var(--bg-page);
+            padding: 0; 
+            overflow: hidden;
+        }
 
         .bg-award-watermark {
             position: absolute; 
-            top: 15dvh; 
-            left: -12dvw; 
+            top: 12dvh; 
+            left: -10dvw; 
             transform: rotate(-15deg); 
-            font-size: 42rem; 
+            font-size: 38rem; 
             font-weight: 900; 
-            color: rgba(250, 120, 50, 0.04); 
+            color: rgba(250, 120, 50, 0.05); 
             pointer-events: none; user-select: none; z-index: 0;
             line-height: 1;
-            white-space: nowrap;
         }
 
         .result-container {
@@ -112,13 +116,11 @@
         .result-main-text { color: var(--text-dark); font-size: 1.3rem; font-weight: 800; margin-bottom: 25px; z-index: 1;}
 
         .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; z-index: 1;}
-        
-        /* 修正：卡片變為正方形並完美置中 */
         .stat-card-plane {
             background: #fff; padding: 15px; border-radius: 20px; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             gap: 10px; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.015);
-            aspect-ratio: 1 / 1; /* 強制正方形 */
+            aspect-ratio: 1 / 1; 
         }
         
         .stat-badge {
@@ -130,9 +132,8 @@
         .stat-label-plane { font-size: 0.9rem; font-weight: 800; color: var(--text-muted); margin-bottom: -5px; }
         .stat-value-plane { font-size: 2.6rem; font-weight: 900; color: var(--text-dark); letter-spacing: -1px; line-height: 1;}
 
-        /* 新增：可愛的填空裝飾線 */
         .decorative-divider {
-            flex: 1; /* 填滿剩餘空間 */
+            flex: 1; 
             display: flex; align-items: center; justify-content: center;
             color: var(--text-muted); opacity: 0.3; font-size: 1.1rem; letter-spacing: 6px;
         }
@@ -148,7 +149,7 @@
             .timer-text { font-size: 5.5rem; }
             .result-title-card { font-size: 1.8rem; padding: 12px 30px; }
             .bg-award-watermark { font-size: 32rem; top: 10dvh; left: -10dvw;}
-            .stat-card-plane { aspect-ratio: auto; padding: 20px 10px; } /* 小螢幕取消正方形以防太擠 */
+            .stat-card-plane { aspect-ratio: auto; padding: 20px 10px; } 
         }
     </style>
 </head>
@@ -217,7 +218,7 @@
                 </div>
                 
                 <div class="decorative-divider">
-                    .. 𖥧 𖥧 𖧧 ˒˒. . 𖡼.𖤣𖥧 ⠜ . . 𖥧 𖥧 𖧧 ˒˒..
+                    ✦ · · · · · ✦
                 </div>
 
                 <div class="result-footer-cute">
@@ -233,6 +234,7 @@
         </div>
     </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
     const originalStages = [
         { n: "暖身", d: 8, i: 3, s: 5, bg: "#e0f2ff" },
