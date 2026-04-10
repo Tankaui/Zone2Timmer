@@ -181,7 +181,7 @@
         <div class="bg-award-watermark">獎</div>
         
         <div class="result-container">
-            <div class="result-title-card">恭喜訓練完成</div>
+            <div class="result-title-card">恭 喜 訓 練 完 成</div>
             
             <div class="result-progress-bar">
                 <div class="prog-dot" style="background:var(--c1)"></div>
@@ -216,7 +216,7 @@
             
             <div class="control-group" style="width: 100%;">
                 <button class="btn-finish" onclick="location.reload()">返回設定</button>
-                <button class="btn-gray" onclick="shareResult()">分享與儲存</button>
+                <button class="btn-gray" onclick="shareResult()">分享訓練成績</button>
             </div>
         </div>
     </div>
@@ -416,7 +416,7 @@
     function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
 
     async function shareResult() {
-        const text = `Zone2訓練達成！總時間：${fmt(total)}，最高挑戰：${stages[maxIdxReached].n}。也別忘了補充蛋白質與水分！`;
+        const text = `今天訓練達成！總時間：${fmt(total)}，最高挑戰：${stages[maxIdxReached].n}。也別忘了要多多補充蛋白質與水分喔！`;
         if (navigator.share) {
             try { await navigator.share({ title: 'Zone2 訓練結果', text: text, url: window.location.href }); } catch (err) {}
         } else { alert('請手動截圖保存結算畫面！'); }
