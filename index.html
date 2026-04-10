@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 V41</title>
+    <title>Zone2 訓練儀表板 V42</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
         :root {
             --bg-page: #f5f5f7;
@@ -24,7 +27,6 @@
             --res-title-text: #ff9f00;
         }
 
-        /* 核心修正：touch-action: manipulation 可以徹底關閉手機雙擊放大的預設行為 */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         
         body { 
@@ -33,7 +35,8 @@
             margin: 0; height: 100dvh; width: 100vw; overflow: hidden; 
             display: flex; flex-direction: column;
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-            overscroll-behavior-y: none; /* 防止 Safari 的橡皮筋下拉重整效果 */
+            overscroll-behavior-y: none;
+            -webkit-text-size-adjust: 100%;
         }
 
         .view-section { display: none; flex-direction: column; height: 100%; padding: 10px 20px; opacity: 0; transition: opacity 0.4s ease-in-out; position: relative; }
@@ -53,7 +56,6 @@
 
         /* --- 運動畫面 --- */
         .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 10px 0; flex-shrink: 0;}
-        /* 加入 user-select: none 防止快速點擊時反白文字 */
         .stage-box { padding: 12px 2px; border-radius: 10px; text-align: center; font-weight: 900; font-size: 0.8rem; color: var(--text-muted); background: #fff; cursor: pointer; transition: 0.3s; -webkit-user-select: none; user-select: none; }
         .stage-box.active { background: #1d1d1f !important; color: #fff !important; }
         .main-display { flex: 1; margin: 10px 0; border-radius: 28px; display: flex; flex-direction: column; justify-content: center; padding: 30px; background-color: var(--card-white); position: relative; overflow: hidden; transition: background-color 0.8s ease; }
@@ -66,7 +68,6 @@
         .pulse-active { animation: soft-pulse 0.4s ease-in-out; }
 
         .button-area { padding: 15px 0; flex-shrink: 0; width: 100%; }
-        /* 加入 user-select: none 防止快速點擊時反白文字 */
         button { border: none; padding: 18px; font-size: 1.3rem; font-weight: 900; border-radius: 20px; cursor: pointer; width: 100%; height: 65px; transition: opacity 0.2s; white-space: nowrap; -webkit-user-select: none; user-select: none; }
         button:active { opacity: 0.8; }
         .btn-finish, .btn-start { background: var(--btn-blue-bg); color: #fff; }
@@ -76,22 +77,19 @@
         .control-group button { font-size: 1.15rem; }
 
         /* --- 結算畫面 --- */
-        #resultView {
-            background-color: var(--bg-page);
-            padding: 0; 
-            overflow: hidden;
-        }
+        #resultView { background-color: var(--bg-page); padding: 0; overflow: hidden; }
 
         .bg-award-watermark {
             position: absolute; 
-            top: 12dvh; 
-            left: -10dvw; 
+            top: 15dvh; 
+            left: -12dvw; 
             transform: rotate(-15deg); 
-            font-size: 38rem; 
+            font-size: 42rem; 
             font-weight: 900; 
-            color: rgba(250, 120, 50, 0.05); 
+            color: rgba(250, 120, 50, 0.04); 
             pointer-events: none; user-select: none; z-index: 0;
             line-height: 1;
+            white-space: nowrap;
         }
 
         .result-container {
@@ -116,6 +114,7 @@
         .result-main-text { color: var(--text-dark); font-size: 1.3rem; font-weight: 800; margin-bottom: 25px; z-index: 1;}
 
         .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; z-index: 1;}
+        
         .stat-card-plane {
             background: #fff; padding: 15px; border-radius: 20px; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
@@ -218,7 +217,7 @@
                 </div>
                 
                 <div class="decorative-divider">
-                    ✦ · · · · · ✦
+                    ✦ · · 🏃 · · ✦
                 </div>
 
                 <div class="result-footer-cute">
@@ -234,8 +233,31 @@
         </div>
     </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
+    // --- 強制阻擋 iOS 雙指縮放與雙擊放大 ---
+    document.addEventListener('touchstart', function(event) {
+        if (event.touches.length > 1) {
+            event.preventDefault(); // 擋下雙指縮放
+        }
+    }, { passive: false });
+
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            // 如果點擊的是 input 欄位就不阻擋，以免無法輸入設定
+            if (event.target.tagName !== 'INPUT') {
+                event.preventDefault(); // 擋下雙擊放大
+            }
+        }
+        lastTouchEnd = now;
+    }, { passive: false });
+
+    document.addEventListener('dblclick', function(event) {
+        event.preventDefault(); // 阻擋滑鼠或某些設備的雙擊
+    }, { passive: false });
+    // ----------------------------------------
+
     const originalStages = [
         { n: "暖身", d: 8, i: 3, s: 5, bg: "#e0f2ff" },
         { n: "預熱", d: 7, i: 8, s: 5.5, bg: "#e0fff2" },
