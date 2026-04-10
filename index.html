@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 專業訓練儀表板 V32</title>
+    <title>Zone2 專業訓練儀表板 V32.1</title>
     <style>
         :root {
             --bg-page: #f5f5f7;
@@ -67,7 +67,7 @@
         .control-group { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; }
         .control-group button { font-size: 1.15rem; }
 
-        /* --- V32 結算畫面設計優化 --- */
+        /* --- V32.1 結算畫面設計優化 --- */
         #resultView {
             background-color: var(--bg-page);
             padding: 0; /* 讓容器填滿 */
@@ -111,7 +111,7 @@
             font-size: 2.5rem;
             font-weight: 900;
             letter-spacing: -1.5px;
-            margin-bottom: 5px;
+            margin-bottom: 25px; /* 修改：加大下方間距，不與色塊黏在一起 */
             box-shadow: 0 5px 0 rgba(255,159,0,0.1);
             position: relative;
         }
@@ -220,7 +220,8 @@
                 <div class="prog-dot" style="background:var(--c3)"></div>
                 <div class="prog-dot" style="background:var(--c4)"></div>
                 <div class="prog-dot" style="background:var(--c5)"></div>
-                <div class="prog-dot" style="background:#ddd"></div> </div>
+                <div class="prog-dot" style="background:#ddd"></div> 
+            </div>
 
             <p class="result-main-text">今天完成了一場很棒的訓練</p>
             
@@ -240,7 +241,7 @@
             <div style="flex: 1;"></div>
 
             <div class="result-footer-pro">
-                <div>今天辛苦了ˊ</div>
+                <div>今天辛苦了</div>
                 <div style="font-size: 0.8rem; color: #a1a1aa; margin-top: 2px;">記得好好休息，補充水分跟蛋白質</div>
             </div>
             
@@ -402,7 +403,7 @@
         const text = `Zone2訓練達成！總時間：${fmt(total)}，最高挑戰：${stages[maxIdxReached].n}。也別忘了補充蛋白質與水分！`;
         if (navigator.share) {
             try { await navigator.share({ title: 'Zone2 訓練結果', text: text, url: window.location.href }); } catch (err) {}
-        } else { alert('請截圖保存結算畫面！'); }
+        } else { alert('請手動截圖保存結算畫面！'); }
     }
 
     calcTotal();
