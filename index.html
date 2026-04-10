@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 V38</title>
+    <title>Zone2 訓練儀表板 V39</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
         :root {
             --bg-page: #f5f5f7;
@@ -32,9 +35,6 @@
             margin: 0; height: 100dvh; width: 100vw; overflow: hidden; 
             display: flex; flex-direction: column;
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-            /* 嚴格防止 iOS 上不必要的彈性滑動與縮放 */
-            touch-action: pan-y; 
-            overscroll-behavior-y: none;
         }
 
         .view-section { display: none; flex-direction: column; height: 100%; padding: 10px 20px; opacity: 0; transition: opacity 0.4s ease-in-out; position: relative; }
@@ -178,46 +178,48 @@
     </div>
 
     <div id="resultView" class="view-section">
-        <div class="bg-award-watermark">獎</div>
-        
-        <div class="result-container">
-            <div class="result-title-card">- 恭喜訓練完成 -</div>
+        <div id="captureArea" style="position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; background-color: var(--bg-page);">
+            <div class="bg-award-watermark">獎</div>
             
-            <div class="result-progress-bar">
-                <div class="prog-dot" style="background:var(--c1)"></div>
-                <div class="prog-dot" style="background:var(--c2)"></div>
-                <div class="prog-dot" style="background:var(--c3)"></div>
-                <div class="prog-dot" style="background:var(--c4)"></div>
-                <div class="prog-dot" style="background:var(--c5)"></div>
-                <div class="prog-dot" style="background:#ddd"></div> 
-            </div>
-
-            <p class="result-main-text">記得補充蛋白質與水分！</p>
-            
-            <div class="result-grid">
-                <div class="stat-card-plane">
-                    <div class="stat-badge" style="background:var(--c2); color:var(--c2-t);">#</div>
-                    <span class="stat-label-plane">累積總時長</span>
-                    <span id="resTotalTime" class="stat-value-plane">00:00</span>
+            <div class="result-container">
+                <div class="result-title-card"> - 恭喜訓練完成 - </div>
+                
+                <div class="result-progress-bar">
+                    <div class="prog-dot" style="background:var(--c1)"></div>
+                    <div class="prog-dot" style="background:var(--c2)"></div>
+                    <div class="prog-dot" style="background:var(--c3)"></div>
+                    <div class="prog-dot" style="background:var(--c4)"></div>
+                    <div class="prog-dot" style="background:var(--c5)"></div>
+                    <div class="prog-dot" style="background:#ddd"></div> 
                 </div>
-                <div class="stat-card-plane">
-                    <div class="stat-badge" style="background:var(--c4); color:var(--c4-t);">★</div>
-                    <span class="stat-label-plane">最高挑戰</span>
-                    <span id="resMaxStage" class="stat-value-plane" style="font-size: 1.6rem;">暖身</span>
+
+                <p class="result-main-text">記得補充蛋白質與水分！</p>
+                
+                <div class="result-grid">
+                    <div class="stat-card-plane">
+                        <div class="stat-badge" style="background:var(--c2); color:var(--c2-t);">#</div>
+                        <span class="stat-label-plane">累積總時長</span>
+                        <span id="resTotalTime" class="stat-value-plane">00:00</span>
+                    </div>
+                    <div class="stat-card-plane">
+                        <div class="stat-badge" style="background:var(--c4); color:var(--c4-t);">★</div>
+                        <span class="stat-label-plane">最高挑戰</span>
+                        <span id="resMaxStage" class="stat-value-plane" style="font-size: 1.6rem;">暖身</span>
+                    </div>
+                </div>
+                
+                <div style="flex: 1;"></div>
+
+                <div class="result-footer-cute">
+                    <div class="cute-main">今天也超級棒喔！( *ˊᵕˋ)✩︎‧₊</div>
+                    <div class="cute-sub">記得好好休息，補充水分跟蛋白質</div>
                 </div>
             </div>
-            
-            <div style="flex: 1;"></div>
+        </div>
 
-            <div class="result-footer-cute">
-                <div class="cute-main">今天也超級棒喔！( *ˊᵕˋ)✩︎‧₊</div>
-                <div class="cute-sub">記得好好休息，補充水分跟蛋白質</div>
-            </div>
-            
-            <div class="control-group" style="width: 100%;">
-                <button class="btn-finish" onclick="location.reload()">返回設定</button>
-                <button class="btn-gray" onclick="shareResult()">分享訓練成績</button>
-            </div>
+        <div class="control-group" id="actionButtons" style="width: 100%; padding: 0 20px 20px 20px;">
+            <button class="btn-finish" onclick="location.reload()">返回設定</button>
+            <button class="btn-gray" id="shareBtn" onclick="shareResult()">分享與儲存</button>
         </div>
     </div>
 
@@ -236,29 +238,17 @@
     let isPrep = false, prepSec = 10;
     let wakeLock = null;
 
-    // --- 喚醒鎖定 (Wake Lock) ---
     async function requestWakeLock() {
-        try {
-            if ('wakeLock' in navigator) {
-                wakeLock = await navigator.wakeLock.request('screen');
-            }
-        } catch (err) {
-            console.log('Wake Lock request failed:', err);
-        }
+        try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); } } 
+        catch (err) { console.log('Wake Lock API failed'); }
     }
 
     function releaseWakeLock() {
-        if (wakeLock !== null) {
-            wakeLock.release().catch(() => {});
-            wakeLock = null;
-        }
+        if (wakeLock !== null) { wakeLock.release().catch(() => {}); wakeLock = null; }
     }
 
-    // 當文件可見性改變時 (例如切換 App)，嘗試重新取得 Wake Lock
     document.addEventListener('visibilitychange', async () => {
-        if (wakeLock !== null && document.visibilityState === 'visible' && run) {
-            requestWakeLock();
-        }
+        if (wakeLock !== null && document.visibilityState === 'visible' && run) { requestWakeLock(); }
     });
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -383,12 +373,12 @@
         const btn = document.getElementById('playBtn');
         const sideBtn = document.getElementById('sideBtn');
         if (run) {
-            requestWakeLock(); // 運動開始時防休眠
+            requestWakeLock();
             btn.innerText = "暫停"; btn.classList.add('btn-red');
             sideBtn.innerText = "回設定"; sideBtn.classList.remove('btn-red');
             timerInterval = setInterval(tick, 1000);
         } else {
-            releaseWakeLock(); // 暫停時釋放休眠鎖定
+            releaseWakeLock();
             btn.innerText = "繼續運動"; btn.classList.remove('btn-red');
             sideBtn.innerText = "結束運動"; sideBtn.classList.add('btn-red');
             clearInterval(timerInterval);
@@ -406,7 +396,7 @@
 
     function showSummary() {
         clearInterval(timerInterval);
-        releaseWakeLock(); // 結算時釋放休眠鎖定
+        releaseWakeLock(); 
         document.getElementById('resTotalTime').innerText = fmt(total);
         document.getElementById('resMaxStage').innerText = stages[maxIdxReached].n;
         switchView('resultView');
@@ -415,11 +405,68 @@
     function jump(i) { idx = i; sec = 0; isPrep = true; prepSec = 10; if(idx > maxIdxReached) maxIdxReached = idx; updateUI(); }
     function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
 
+    // --- 核心更新：真實截圖邏輯 ---
     async function shareResult() {
-        const text = `今天訓練達成！總時間：${fmt(total)}，最高挑戰：${stages[maxIdxReached].n}。也別忘了要多多補充蛋白質與水分喔！`;
-        if (navigator.share) {
-            try { await navigator.share({ title: 'Zone2 訓練結果', text: text, url: window.location.href }); } catch (err) {}
-        } else { alert('請手動截圖保存結算畫面！'); }
+        const btnArea = document.getElementById('actionButtons');
+        const shareBtn = document.getElementById('shareBtn');
+        const captureArea = document.getElementById('captureArea');
+        
+        // 1. 為了截圖完美，暫時隱藏按鈕區，並改變按鈕文字提示用戶
+        const originalText = shareBtn.innerText;
+        shareBtn.innerText = "產生圖片中...";
+        btnArea.style.display = 'none';
+
+        try {
+            // 檢查 html2canvas 是否載入成功
+            if (typeof html2canvas === 'undefined') {
+                throw new Error("截圖模組尚未準備好");
+            }
+
+            // 2. 進行 DOM 截圖 (scale: 2 確保高畫質，backgroundColor 確保去背透明度不會黑掉)
+            const canvas = await html2canvas(captureArea, {
+                scale: 2,
+                backgroundColor: '#f5f5f7'
+            });
+            
+            // 3. 將 Canvas 轉為 Blob 檔案
+            canvas.toBlob(async (blob) => {
+                const file = new File([blob], 'Zone2_Workout_Result.png', { type: 'image/png' });
+                
+                // 4. 嘗試使用手機原生的 Web Share API (包含圖片檔案)
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            title: 'Zone2 訓練完成',
+                            text: `Zone2訓練達成！總時間：${fmt(total)}，最高挑戰：${stages[maxIdxReached].n}。`,
+                            files: [file]
+                        });
+                    } catch (err) {
+                        console.log('使用者取消分享或失敗', err);
+                    }
+                } else {
+                    // 5. 降級方案：如果是電腦版，或是手機瀏覽器不支援傳送檔案，直接觸發下載
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Zone2_Result_${new Date().getTime()}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+                
+                // 恢復按鈕顯示
+                btnArea.style.display = 'grid';
+                shareBtn.innerText = originalText;
+
+            }, 'image/png');
+
+        } catch (err) {
+            console.error(err);
+            alert('截圖產生失敗，請手動截圖保存結算畫面！');
+            btnArea.style.display = 'grid';
+            shareBtn.innerText = originalText;
+        }
     }
 
     initSetup();
