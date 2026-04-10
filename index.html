@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 V39</title>
+    <title>Zone2 訓練儀表板 V40</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
@@ -75,34 +75,31 @@
         .control-group button { font-size: 1.15rem; }
 
         /* --- 結算畫面 --- */
-        #resultView {
-            background-color: var(--bg-page);
-            padding: 0; 
-            overflow: hidden;
-        }
+        #resultView { background-color: var(--bg-page); padding: 0; overflow: hidden; }
 
         .bg-award-watermark {
             position: absolute; 
-            top: 12dvh; 
-            left: -10dvw; 
+            top: 15dvh; 
+            left: -12dvw; 
             transform: rotate(-15deg); 
-            font-size: 38rem; 
+            font-size: 42rem; 
             font-weight: 900; 
-            color: rgba(250, 120, 50, 0.05); 
+            color: rgba(250, 120, 50, 0.04); 
             pointer-events: none; user-select: none; z-index: 0;
             line-height: 1;
+            white-space: nowrap;
         }
 
         .result-container {
             flex: 1; width: 100%; height: 100%; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 1; aspect-ratio: 16 / 9;
-            max-width: 90dvw; margin: auto; padding: 30px;
+            align-items: center; justify-content: flex-start; z-index: 1; aspect-ratio: 16 / 9;
+            max-width: 90dvw; margin: auto; padding: 40px 30px 20px 30px;
         }
 
         .result-title-card {
             background-color: var(--res-title-bg); color: var(--res-title-text);
-            padding: 18px 40px; border-radius: 18px; font-size: 2.5rem; font-weight: 900;
-            letter-spacing: -1.5px; margin-bottom: 25px; box-shadow: 0 5px 0 rgba(255,159,0,0.1);
+            padding: 16px 40px; border-radius: 18px; font-size: 2.2rem; font-weight: 900;
+            letter-spacing: -1px; margin-bottom: 25px; box-shadow: 0 5px 0 rgba(255,159,0,0.1);
             position: relative;
         }
 
@@ -112,35 +109,46 @@
         }
         .prog-dot { height: 100%; }
 
-        .result-main-text { color: var(--text-dark); font-size: 1.25rem; font-weight: 800; margin-bottom: 25px; z-index: 1;}
+        .result-main-text { color: var(--text-dark); font-size: 1.3rem; font-weight: 800; margin-bottom: 25px; z-index: 1;}
 
         .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; z-index: 1;}
+        
+        /* 修正：卡片變為正方形並完美置中 */
         .stat-card-plane {
-            background: #fff; padding: 20px 10px; border-radius: 20px; text-align: center;
-            display: flex; flex-direction: column; gap: 5px; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.015);
+            background: #fff; padding: 15px; border-radius: 20px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            gap: 10px; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.015);
+            aspect-ratio: 1 / 1; /* 強制正方形 */
         }
         
         .stat-badge {
             position: absolute; top: -10px; left: -10px; width: 30px; height: 30px;
             border-radius: 10px; display: flex; align-items: center; justify-content: center;
-            font-weight: 900; font-size: 0.9rem;
+            font-weight: 900; font-size: 1rem;
         }
 
-        .stat-label-plane { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); }
-        .stat-value-plane { font-size: 2.4rem; font-weight: 900; color: var(--text-dark); letter-spacing: -1px; }
+        .stat-label-plane { font-size: 0.9rem; font-weight: 800; color: var(--text-muted); margin-bottom: -5px; }
+        .stat-value-plane { font-size: 2.6rem; font-weight: 900; color: var(--text-dark); letter-spacing: -1px; line-height: 1;}
+
+        /* 新增：可愛的填空裝飾線 */
+        .decorative-divider {
+            flex: 1; /* 填滿剩餘空間 */
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); opacity: 0.3; font-size: 1.1rem; letter-spacing: 6px;
+        }
 
         .result-footer-cute {
             width: 100%; background: rgba(255,255,255,0.7); padding: 15px; border-radius: 15px;
             text-align: center; color: var(--text-muted); margin-bottom: 10px; z-index: 1;
         }
-        .cute-main { font-size: 1.05rem; font-weight: 800; color: var(--text-dark); }
-        .cute-sub { font-size: 0.75rem; color: #a1a1aa; margin-top: 6px; font-weight: 700; }
+        .cute-main { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); }
+        .cute-sub { font-size: 0.8rem; color: #a1a1aa; margin-top: 6px; font-weight: 700; }
 
         @media (max-height: 670px) {
             .timer-text { font-size: 5.5rem; }
-            .result-title-card { font-size: 2rem; padding: 12px 30px; }
-            .bg-award-watermark { font-size: 28rem; top: 8dvh; left: -5dvw;}
-            .card-name { font-size: 0.85rem; }
+            .result-title-card { font-size: 1.8rem; padding: 12px 30px; }
+            .bg-award-watermark { font-size: 32rem; top: 10dvh; left: -10dvw;}
+            .stat-card-plane { aspect-ratio: auto; padding: 20px 10px; } /* 小螢幕取消正方形以防太擠 */
         }
     </style>
 </head>
@@ -182,7 +190,7 @@
             <div class="bg-award-watermark">獎</div>
             
             <div class="result-container">
-                <div class="result-title-card"> - 恭喜訓練完成 - </div>
+                <div class="result-title-card">- 恭喜訓練完成 -</div>
                 
                 <div class="result-progress-bar">
                     <div class="prog-dot" style="background:var(--c1)"></div>
@@ -190,10 +198,10 @@
                     <div class="prog-dot" style="background:var(--c3)"></div>
                     <div class="prog-dot" style="background:var(--c4)"></div>
                     <div class="prog-dot" style="background:var(--c5)"></div>
-                    <div class="prog-dot" style="background:#ddd"></div> 
+                    <div class="prog-dot" style="background:#e0e0e0"></div> 
                 </div>
 
-                <p class="result-main-text">記得補充蛋白質與水分！</p>
+                <div class="result-main-text">記得補充蛋白質與水分！</div>
                 
                 <div class="result-grid">
                     <div class="stat-card-plane">
@@ -204,11 +212,13 @@
                     <div class="stat-card-plane">
                         <div class="stat-badge" style="background:var(--c4); color:var(--c4-t);">★</div>
                         <span class="stat-label-plane">最高挑戰</span>
-                        <span id="resMaxStage" class="stat-value-plane" style="font-size: 1.6rem;">暖身</span>
+                        <span id="resMaxStage" class="stat-value-plane" style="font-size: 2rem;">暖身</span>
                     </div>
                 </div>
                 
-                <div style="flex: 1;"></div>
+                <div class="decorative-divider">
+                    ✦ · · 🏃 · · ✦
+                </div>
 
                 <div class="result-footer-cute">
                     <div class="cute-main">今天也超級棒喔！( *ˊᵕˋ)✩︎‧₊</div>
@@ -405,34 +415,28 @@
     function jump(i) { idx = i; sec = 0; isPrep = true; prepSec = 10; if(idx > maxIdxReached) maxIdxReached = idx; updateUI(); }
     function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
 
-    // --- 核心更新：真實截圖邏輯 ---
     async function shareResult() {
         const btnArea = document.getElementById('actionButtons');
         const shareBtn = document.getElementById('shareBtn');
         const captureArea = document.getElementById('captureArea');
         
-        // 1. 為了截圖完美，暫時隱藏按鈕區，並改變按鈕文字提示用戶
         const originalText = shareBtn.innerText;
         shareBtn.innerText = "產生圖片中...";
         btnArea.style.display = 'none';
 
         try {
-            // 檢查 html2canvas 是否載入成功
             if (typeof html2canvas === 'undefined') {
                 throw new Error("截圖模組尚未準備好");
             }
 
-            // 2. 進行 DOM 截圖 (scale: 2 確保高畫質，backgroundColor 確保去背透明度不會黑掉)
             const canvas = await html2canvas(captureArea, {
                 scale: 2,
                 backgroundColor: '#f5f5f7'
             });
             
-            // 3. 將 Canvas 轉為 Blob 檔案
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], 'Zone2_Workout_Result.png', { type: 'image/png' });
                 
-                // 4. 嘗試使用手機原生的 Web Share API (包含圖片檔案)
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
@@ -444,7 +448,6 @@
                         console.log('使用者取消分享或失敗', err);
                     }
                 } else {
-                    // 5. 降級方案：如果是電腦版，或是手機瀏覽器不支援傳送檔案，直接觸發下載
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -455,7 +458,6 @@
                     URL.revokeObjectURL(url);
                 }
                 
-                // 恢復按鈕顯示
                 btnArea.style.display = 'grid';
                 shareBtn.innerText = originalText;
 
