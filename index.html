@@ -1,133 +1,327 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<style>
-    /* --- 結算畫面設計優化 --- */
-    #resultView {
-        justify-content: flex-start;
-        padding-top: 40px;
-    }
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Zone2 專業訓練儀表板 V28</title>
+    <style>
+        :root {
+            --bg-page: #f5f5f7;
+            --card-white: #ffffff;
+            --text-dark: #1d1d1f;
+            --text-muted: #86868b;
+            --c1: #e0f2ff; --c1-t: #007aff;
+            --c2: #e0fff2; --c2-t: #00af91;
+            --c3: #e8f5e9; --c3-t: #34c759;
+            --c4: #fff3e0; --c4-t: #ff9500;
+            --c5: #fce4ec; --c5-t: #ff2d55;
+            --c6: #ffffff; --c6-t: #1d1d1f;
+            --btn-blue-bg: #40b0e5;
+            --prep-bg: #e5e5e7;
+            --flash-red: rgba(255, 59, 48, 0.2);
+        }
 
-    .result-container {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-    }
-
-    .success-badge {
-        background: var(--c2);
-        color: var(--c2-t);
-        padding: 8px 20px;
-        border-radius: 50px;
-        font-weight: 900;
-        font-size: 1rem;
-        margin-bottom: 10px;
-    }
-
-    .result-main-card {
-        width: 100%;
-        background: #fff;
-        border-radius: 32px;
-        padding: 40px 20px;
-        text-align: center;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    }
-
-    .result-title {
-        font-size: 2.2rem;
-        font-weight: 900;
-        margin-bottom: 5px;
-        letter-spacing: -1px;
-    }
-
-    .result-subtitle {
-        color: var(--text-muted);
-        font-weight: 600;
-        margin-bottom: 30px;
-    }
-
-    .result-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        width: 100%;
-    }
-
-    .stat-card {
-        background: var(--bg-page);
-        padding: 20px 10px;
-        border-radius: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    .stat-label {
-        font-size: 0.8rem;
-        font-weight: 900;
-        color: var(--text-muted);
-    }
-
-    .stat-value {
-        font-size: 1.8rem;
-        font-weight: 900;
-        color: var(--text-dark);
-    }
-
-    .congrats-text {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--text-muted);
-        margin-top: 20px;
-        line-height: 1.5;
-    }
-</style>
-
-<div id="resultView" class="view-section">
-    <div class="result-container">
-        <div class="success-badge">MISSION ACCOMPLISHED</div>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        <div class="result-main-card">
-            <h2 class="result-title">訓練完成</h2>
-            <p class="result-subtitle">太棒了！您今天完成了一次高品質的訓練</p>
-            
-            <div class="result-grid">
-                <div class="stat-card">
-                    <span class="stat-label">累積總時長</span>
-                    <span id="resTotalTime" class="stat-value">00:00</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">最高挑戰</span>
-                    <span id="resMaxStage" class="stat-value">--</span>
-                </div>
-            </div>
+        body { 
+            font-family: -apple-system, "Noto Sans TC", sans-serif; 
+            background-color: var(--bg-page); margin: 0; height: 100dvh; width: 100vw; 
+            overflow: hidden; display: flex; flex-direction: column;
+            padding: env(safe-area-inset-top) 15px env(safe-area-inset-bottom) 15px;
+        }
 
-            <div class="congrats-text">
-                適度的 Zone2 訓練能有效提升代謝靈活性，<br>休息片刻，補充水分吧！
+        /* --- 畫面切換動畫 --- */
+        .view-section { 
+            display: none; 
+            flex-direction: column; 
+            height: 100%; 
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+        .view-section.active-view { display: flex; opacity: 1; }
+
+        /* --- 設定畫面 --- */
+        .setup-header { text-align: center; padding: 10px 0; flex-shrink: 0; }
+        .setup-title { font-size: 1.4rem; font-weight: 900; margin: 0; }
+        .total-summary { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; font-weight: 600; }
+        .total-big { color: var(--text-dark); font-size: 1.2rem; font-weight: 900; }
+
+        .inputs-list { flex: 1; display: flex; flex-direction: column; gap: 6px; padding-bottom: 5px; }
+        .setup-card {
+            display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; align-items: center; gap: 8px; 
+            padding: 8px 15px; border-radius: 12px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.03); flex: 1; min-height: 0;
+        }
+        .setup-card input { border: 1px solid #d2d2d7; background: #f5f5f7; padding: 4px; border-radius: 6px; font-size: 1rem; text-align: center; font-weight: 900; width: 100%; }
+
+        /* --- 運動畫面 --- */
+        .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; padding: 10px 0; flex-shrink: 0;}
+        .stage-box { padding: 10px 0; border-radius: 8px; text-align: center; font-weight: 900; font-size: 0.75rem; color: var(--text-muted); background: #fff; cursor: pointer; transition: background-color 0.3s, color 0.3s; }
+        .stage-box.active { background: #1d1d1f !important; color: #fff !important; }
+
+        .main-display {
+            flex: 1; margin: 5px 0; border-radius: 28px; display: flex; flex-direction: column; 
+            justify-content: center; padding: 20px; background-color: var(--card-white);
+            position: relative; overflow: hidden; transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes soft-pulse {
+            0% { background-color: transparent; }
+            50% { background-color: var(--flash-red); }
+            100% { background-color: transparent; }
+        }
+        .flash-pulse { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        .pulse-active { animation: soft-pulse 0.4s ease-in-out; }
+
+        .timer-text { font-size: 6rem; font-weight: 900; line-height: 1; text-align: center; letter-spacing: -2px; }
+        .info-row { font-size: 1.3rem; font-weight: 900; line-height: 1.7; margin-top: 10px; z-index: 2;}
+        .target-label { font-size: 0.8rem; vertical-align: middle; color: #ff3b30; margin-right: 4px; font-weight: 800; }
+
+        /* --- 結算畫面設計優化 --- */
+        .result-container { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 20px; padding-top: 20px; }
+        .success-badge { background: var(--c2); color: var(--c2-t); padding: 8px 20px; border-radius: 50px; font-weight: 900; font-size: 1rem; margin-bottom: 10px; }
+        .result-main-card { width: 100%; background: #fff; border-radius: 32px; padding: 40px 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .result-title { font-size: 2.2rem; font-weight: 900; margin-bottom: 5px; letter-spacing: -1px; }
+        .result-subtitle { color: var(--text-muted); font-weight: 600; margin-bottom: 30px; }
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
+        .stat-card { background: var(--bg-page); padding: 20px 10px; border-radius: 20px; display: flex; flex-direction: column; gap: 5px; }
+        .stat-label { font-size: 0.8rem; font-weight: 900; color: var(--text-muted); }
+        .stat-value { font-size: 1.8rem; font-weight: 900; color: var(--text-dark); }
+        .congrats-text { font-size: 1rem; font-weight: 700; color: var(--text-muted); margin-top: 25px; line-height: 1.5; }
+
+        /* --- 按鈕系統 --- */
+        .button-area { padding: 10px 0; flex-shrink: 0; width: 100%; }
+        button { border: none; padding: 15px; font-size: 1.2rem; font-weight: 900; border-radius: 18px; cursor: pointer; width: 100%; height: 55px; transition: background-color 0.3s, opacity 0.2s; }
+        .btn-finish, .btn-start { background: var(--btn-blue-bg); color: #fff; }
+        .btn-gray { background: #e8e8ed; color: var(--text-dark); }
+        .btn-red { background: #ff3b30 !important; color: #fff !important; }
+        .control-group { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+
+        @media (max-height: 670px) { .timer-text { font-size: 4.5rem; } .result-title { font-size: 1.8rem; } .stat-value { font-size: 1.4rem; } }
+    </style>
+</head>
+<body>
+
+    <div id="setupView" class="view-section active-view">
+        <div class="setup-header">
+            <h1 class="setup-title">訓練參數設定</h1>
+            <div class="total-summary">預計訓練總時長：<span class="total-big" id="setupTotal">0</span> 分鐘</div>
+        </div>
+        <div class="inputs-list" id="inputsList"></div>
+        <div class="button-area"><button class="btn-finish" onclick="startWorkout()">進入運動模式</button></div>
+    </div>
+
+    <div id="workoutView" class="view-section">
+        <div class="stage-grid" id="stageGrid"></div>
+        <div class="main-display" id="mainDisplay">
+            <div id="flashLayer" class="flash-pulse"></div>
+            <div id="curStageName" style="font-weight: 900; color: var(--text-muted); font-size: 1.1rem; z-index: 2;">準備中</div>
+            <div class="timer-text" id="timer" style="z-index: 2;">00:00</div>
+            <div class="info-row" id="infoRow" style="z-index: 2;">
+                <div><span id="inclineLabel"></span>坡度：<span id="incline">--</span>%</div>
+                <div><span id="speedLabel"></span>速度：<span id="speed">--</span> km/h</div>
+                <div id="totalTimeRow">累積時間：<span id="totalTime">00:00</span></div>
             </div>
         </div>
-
-        <div style="flex: 1;"></div>
-        
-        <div class="button-area" style="width: 100%;">
-            <button class="btn-finish" onclick="location.reload()">回首頁</button>
+        <div class="button-area">
+            <div class="control-group">
+                <button id="playBtn" class="btn-start" onclick="toggle()">開始運動</button>
+                <button id="sideBtn" class="btn-gray" onclick="handleSideBtn()">回設定</button>
+            </div>
         </div>
     </div>
-</div>
+
+    <div id="resultView" class="view-section">
+        <div class="result-container">
+            <div class="success-badge">MISSION ACCOMPLISHED</div>
+            <div class="result-main-card">
+                <h2 class="result-title">訓練完成</h2>
+                <p class="result-subtitle">您今天完成了一次高品質的訓練</p>
+                <div class="result-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">累積總時長</span>
+                        <span id="resTotalTime" class="stat-value">00:00</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">最高挑戰</span>
+                        <span id="resMaxStage" class="stat-value">--</span>
+                    </div>
+                </div>
+                <div class="congrats-text">適度的 Zone2 訓練能提升代謝靈活性，<br>休息片刻，記得補充水分！</div>
+            </div>
+            <div style="flex: 1;"></div>
+            <div class="button-area"><button class="btn-finish" onclick="location.reload()">回首頁</button></div>
+        </div>
+    </div>
 
 <script>
-    /* ... 邏輯部分 ... */
+    const originalStages = [
+        { n: "暖身", d: 8, i: 3, s: 5, bg: "#e0f2ff" },
+        { n: "預熱", d: 7, i: 8, s: 5.5, bg: "#e0fff2" },
+        { n: "挑戰", d: 15, i: 12, s: 5, bg: "#e8f5e9" },
+        { n: "魔王", d: 15, i: 15, s: 4.5, bg: "#fff3e0" },
+        { n: "高位", d: 10, i: 9, s: 6, bg: "#fce4ec" },
+        { n: "緩和", d: 5, i: 0, s: 5, bg: "#ffffff" }
+    ];
+
+    let stages = [...originalStages];
+    let idx = 0, sec = 0, total = 0, run = false, timerInterval;
+    let isPrep = false, prepSec = 10, maxIdxReached = 0;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(freq, duration) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function softFlash() {
+        const layer = document.getElementById('flashLayer');
+        layer.classList.remove('pulse-active');
+        void layer.offsetWidth;
+        layer.classList.add('pulse-active');
+    }
+
+    function switchView(id) {
+        const current = document.querySelector('.view-section.active-view');
+        if (current) current.classList.remove('active-view');
+        const next = document.getElementById(id);
+        next.style.display = 'flex';
+        setTimeout(() => next.classList.add('active-view'), 50);
+        document.querySelectorAll('.view-section').forEach(v => {
+            if (v.id !== id) setTimeout(() => { if (!v.classList.contains('active-view')) v.style.display = 'none'; }, 400);
+        });
+    }
+
+    function initSetup() {
+        const list = document.getElementById('inputsList');
+        list.innerHTML = '';
+        stages.forEach((s, i) => {
+            const card = document.createElement('div');
+            card.className = 'setup-card';
+            card.style.borderLeft = `8px solid ${s.bg}`;
+            card.innerHTML = `
+                <div class="card-name">${s.n}</div>
+                <div class="input-group"><span class="input-label">時間</span><input type="number" inputmode="numeric" id="d-${i}" value="${s.d}" oninput="calcTotal()" onclick="this.select()"></div>
+                <div class="input-group"><span class="input-label">坡度</span><input type="number" inputmode="numeric" id="i-${i}" value="${s.i}" onclick="this.select()"></div>
+                <div class="input-group"><span class="input-label">速度</span><input type="number" inputmode="decimal" id="s-${i}" value="${s.s}" step="0.1" onclick="this.select()"></div>
+            `;
+            list.appendChild(card);
+        });
+        calcTotal();
+    }
+
+    function calcTotal() {
+        let t = 0;
+        stages.forEach((_, i) => {
+            const el = document.getElementById(`d-${i}`);
+            if(el) t += parseInt(el.value) || 0;
+        });
+        document.getElementById('setupTotal').innerText = t;
+    }
+
+    function startWorkout() {
+        stages.forEach((s, i) => {
+            s.d = parseInt(document.getElementById(`d-${i}`).value) || 1;
+            s.i = document.getElementById(`i-${i}`).value || 0;
+            s.s = document.getElementById(`s-${i}`).value || 5;
+        });
+        const grid = document.getElementById('stageGrid');
+        grid.innerHTML = '';
+        stages.forEach((s, i) => { grid.innerHTML += `<div class="stage-box s-${i}" onclick="jump(${i})">${s.n}</div>`; });
+        idx = 0; sec = 0; total = 0; isPrep = true; prepSec = 10; maxIdxReached = 0;
+        switchView('workoutView');
+        updateUI();
+    }
+
+    function handleSideBtn() {
+        if (document.getElementById('sideBtn').classList.contains('btn-red')) {
+            showSummary();
+        } else {
+            location.reload();
+        }
+    }
+
     function showSummary() {
         clearInterval(timerInterval);
-        if (wakeLock) try { wakeLock.release(); } catch(e) {}
-        
-        // 更新數據
         document.getElementById('resTotalTime').innerText = fmt(total);
-        // 抓取運動時更新的最高階段，若沒跳過則依據當前 idx
-        document.getElementById('resMaxStage').innerText = stages[idx].n;
-        
+        document.getElementById('resMaxStage').innerText = stages[maxIdxReached].n;
         switchView('resultView');
     }
-    /* ... 其餘邏輯維持不變 ... */
+
+    function updateUI() {
+        const s = stages[idx];
+        const display = document.getElementById('mainDisplay');
+        const totalTimeRow = document.getElementById('totalTimeRow');
+        const incLabel = document.getElementById('inclineLabel');
+        const spdLabel = document.getElementById('speedLabel');
+        
+        document.querySelectorAll('.stage-box').forEach((b, i) => { if (i === idx) b.classList.add('active'); else b.classList.remove('active'); });
+
+        if (isPrep) {
+            display.style.backgroundColor = "var(--prep-bg)";
+            document.getElementById('curStageName').innerText = `即將進入：${s.n}`;
+            document.getElementById('timer').innerText = `00:${prepSec.toString().padStart(2, '0')}`;
+            incLabel.innerHTML = `<span class="target-label">目標</span>`;
+            spdLabel.innerHTML = `<span class="target-label">目標</span>`;
+            document.getElementById('incline').innerText = s.i;
+            document.getElementById('speed').innerText = s.s;
+            totalTimeRow.style.visibility = "hidden";
+        } else {
+            display.style.backgroundColor = s.bg;
+            document.getElementById('curStageName').innerText = s.n;
+            document.getElementById('timer').innerText = fmt((s.d * 60) - sec);
+            incLabel.innerHTML = ""; spdLabel.innerHTML = "";
+            document.getElementById('incline').innerText = s.i;
+            document.getElementById('speed').innerText = s.s;
+            totalTimeRow.style.visibility = "visible";
+            document.getElementById('totalTime').innerText = fmt(total);
+        }
+    }
+
+    function tick() {
+        if (isPrep) {
+            prepSec--;
+            if (run && prepSec <= 3 && prepSec > 0) playBeep(800, 0.1);
+            if (prepSec <= 0) { isPrep = false; if (run) playBeep(1200, 0.4); }
+        } else {
+            sec++; total++;
+            const s = stages[idx];
+            const rem = (s.d * 60) - sec;
+            if (run) {
+                if (rem === 30) { playBeep(600, 0.2); softFlash(); }
+                if (rem <= 5 && rem > 0) { playBeep(1000, 0.1); softFlash(); }
+            }
+            if (sec >= s.d * 60) {
+                if (idx < 5) { idx++; sec = 0; isPrep = true; prepSec = 10; if(idx > maxIdxReached) maxIdxReached = idx; } 
+                else { showSummary(); return; }
+            }
+        }
+        updateUI();
+    }
+
+    function toggle() {
+        run = !run;
+        const btn = document.getElementById('playBtn');
+        const sideBtn = document.getElementById('sideBtn');
+        if (run) {
+            btn.innerText = "暫停"; btn.classList.add('btn-red');
+            sideBtn.innerText = "回設定"; sideBtn.classList.remove('btn-red');
+            timerInterval = setInterval(tick, 1000);
+        } else {
+            btn.innerText = "繼續運動"; btn.classList.remove('btn-red');
+            sideBtn.innerText = "結束運動"; sideBtn.classList.add('btn-red');
+            clearInterval(timerInterval);
+        }
+    }
+
+    function jump(i) { idx = i; sec = 0; isPrep = true; prepSec = 10; if(idx > maxIdxReached) maxIdxReached = idx; updateUI(); }
+    function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
+
+    initSetup();
 </script>
+</body>
+</html>
