@@ -10,22 +10,13 @@
             --card-white: #ffffff;
             --text-dark: #1d1d1f;
             --text-muted: #86868b;
-            
-            /* 階段顏色 - 來自 Image 1 */
             --c1: #e0f2ff; --c1-t: #007aff;
             --c2: #e0fff2; --c2-t: #00af91;
             --c3: #e8f5e9; --c3-t: #34c759;
             --c4: #fff3e0; --c4-t: #ff9500;
             --c5: #fce4ec; --c5-t: #ff2d55;
             --c6: #ffffff; --c6-t: #1d1d1f;
-
-            /* 按鈕顏色 - 柔和色塊 */
             --btn-blue-bg: #40b0e5;
-            --btn-blue-text: #ffffff;
-            --btn-red-bg: #ff4d4f;
-            --btn-red-text: #ffffff;
-            --btn-gray-bg: #e8e8ed;
-            --btn-gray-text: #1d1d1f;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -34,21 +25,39 @@
             font-family: -apple-system, "Noto Sans TC", sans-serif; 
             background-color: var(--bg-page); 
             color: var(--text-dark); 
-            margin: 0; height: 100vh; width: 100vw; overflow: hidden; 
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
+            margin: 0; 
+            /* 修正關鍵：使用 dvh 確保動態高度準確 */
+            height: 100dvh; 
+            width: 100vw; 
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+            /* 處理安全區域（動態島與底端橫條） */
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
-        .view-section { display: none; flex-direction: column; height: 100%; padding: 15px; }
+        .view-section { 
+            display: none; 
+            flex-direction: column; 
+            height: 100%; 
+            padding: 10px 20px; 
+        }
         #setupView { display: flex; }
 
-        /* --- 設定畫面 --- */
-        .setup-header { text-align: center; padding: 10px 0; }
+        /* --- 設定畫面：優化空間分佈 --- */
+        .setup-header { text-align: center; padding: 15px 0; flex-shrink: 0; }
         .setup-title { font-size: 1.8rem; font-weight: 900; margin: 0; }
         .total-summary { font-size: 1rem; color: var(--text-muted); font-weight: 600; margin-top: 5px; }
-        .total-big { color: var(--text-dark); font-weight: 900; }
 
-        .inputs-list { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 10px 0; justify-content: center; }
+        .inputs-list { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; /* 稍微縮小間距防止推擠 */
+            overflow-y: auto; 
+            padding: 5px 0;
+            justify-content: center; /* 讓卡片在中間 */
+        }
         
         .setup-card {
             display: grid; 
@@ -57,6 +66,8 @@
             padding: 12px 20px;
             border-radius: 16px; 
             background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            flex-shrink: 0; /* 防止卡片在小螢幕被擠壓變形 */
         }
         .setup-card input { 
             border: 1px solid #d2d2d7; 
@@ -70,21 +81,12 @@
         }
 
         /* --- 運動畫面 --- */
-        .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 10px 0; }
+        .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 10px 0; flex-shrink: 0;}
         .stage-box {
-            padding: 14px 2px; 
-            border-radius: 12px; 
-            text-align: center;
-            font-weight: 900; 
-            font-size: 0.85rem; 
-            color: var(--text-muted);
-            background: #fff; /* 預設白色底 */
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-            /* 移除所有位移與陰影 */
+            padding: 12px 2px; border-radius: 10px; text-align: center;
+            font-weight: 900; font-size: 0.8rem; color: var(--text-muted);
+            background: #fff; cursor: pointer; transition: 0.3s;
         }
-
-        /* 當前階段：僅更換背景色與文字色，高度與周圍完全對齊 */
         .stage-box.active.s0 { background: var(--c1); color: var(--c1-t); }
         .stage-box.active.s1 { background: var(--c2); color: var(--c2-t); }
         .stage-box.active.s2 { background: var(--c3); color: var(--c3-t); }
@@ -95,41 +97,45 @@
         .main-display {
             flex: 1; margin: 10px 0; border-radius: 28px;
             display: flex; flex-direction: column; justify-content: center;
-            padding: 40px; background-color: var(--card-white);
-            transition: background-color 0.6s ease;
+            padding: 30px; background-color: var(--card-white);
             position: relative; overflow: hidden;
         }
 
-        .timer-text { font-size: 7.5rem; font-weight: 900; line-height: 1.1; margin: 10px 0; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
-        .info-row { font-size: 1.5rem; font-weight: 900; line-height: 1.8; }
+        .timer-text { font-size: 7rem; font-weight: 900; line-height: 1; margin: 10px 0; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
+        .info-row { font-size: 1.4rem; font-weight: 900; line-height: 1.8; }
 
-        .progress-bar { position: absolute; bottom: 0; left: 0; height: 10px; background: rgba(0,0,0,0.05); width: 100%; }
+        .progress-bar { position: absolute; bottom: 0; left: 0; height: 8px; background: rgba(0,0,0,0.05); width: 100%; }
         .progress-fill { height: 100%; width: 0%; background: var(--text-dark); opacity: 0.2; transition: width 1s linear; }
 
-        /* --- 結算畫面 --- */
-        .result-card { border-radius: 28px; padding: 40px 20px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; background: #fff; }
-        .result-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 20px; }
-        .result-value { font-size: 4rem; font-weight: 900; letter-spacing: -2px; }
+        /* --- 按鈕系統：保證高度與不被切斷 --- */
+        .button-area {
+            padding: 15px 0;
+            flex-shrink: 0; /* 核心：按鈕區域絕對不被壓縮 */
+        }
 
-        /* --- 按鈕系統：平面圓角色塊 --- */
-        .control-group { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-top: 10px; }
-        
         button { 
             border: none;
             padding: 18px; 
             font-size: 1.3rem; font-weight: 900; border-radius: 20px;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            height: 70px;
+            width: 100%;
+            height: 65px;
             transition: opacity 0.2s;
         }
         button:active { opacity: 0.8; }
 
-        .btn-finish, .btn-start, .btn-result { background: var(--btn-blue-bg); color: var(--btn-blue-text); width: 100%; }
-        .btn-red { background: var(--btn-red-bg); color: var(--btn-red-text); }
-        .btn-gray { background: var(--btn-gray-bg); color: var(--btn-gray-text); }
+        .btn-finish, .btn-start { background: var(--btn-blue-bg); color: #fff; }
+        .btn-red { background: #ff4d4f; color: #fff; }
+        .btn-gray { background: #e8e8ed; color: var(--text-dark); }
 
-        @media (max-width: 400px) { .timer-text { font-size: 5.5rem; } .info-row { font-size: 1.2rem; } }
+        .control-group { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+
+        @media (max-height: 700px) {
+            .setup-title { font-size: 1.4rem; }
+            .setup-card { padding: 8px 15px; }
+            .timer-text { font-size: 5rem; }
+        }
     </style>
 </head>
 <body>
@@ -137,10 +143,12 @@
     <div id="setupView" class="view-section">
         <div class="setup-header">
             <h1 class="setup-title">設定各階段時間</h1>
-            <div class="total-summary">總時長：<span class="total-big" id="setupTotal">60</span> 分鐘</div>
+            <div class="total-summary">總時長：<span id="setupTotal" style="font-weight: 900; color: #000;">60</span> 分鐘</div>
         </div>
         <div class="inputs-list" id="inputsList"></div>
-        <button class="btn-finish" onclick="startWorkout()" style="margin-top: 20px;">完成並開始訓練</button>
+        <div class="button-area">
+            <button class="btn-finish" onclick="startWorkout()">完成並開始訓練</button>
+        </div>
     </div>
 
     <div id="workoutView" class="view-section">
@@ -153,32 +161,31 @@
             <div class="stage-box s5" onclick="jump(5)">緩和</div>
         </div>
         <div class="main-display" id="mainDisplay">
-            <div style="font-weight: 900; color: var(--text-muted); font-size: 1.1rem;">區段剩餘時間</div>
+            <div style="font-weight: 900; color: var(--text-muted); font-size: 1rem;">區段剩餘時間</div>
             <div class="timer-text" id="timer">00:00</div>
             <div class="info-row">
-                <div>坡度 Incline：<span id="incline">--</span>%</div>
-                <div>速度 Speed：<span id="speed">--</span> km/h</div>
-                <div>目標心率：<span id="hr">--</span></div>
-                <div style="margin-top: 5px; color: var(--text-muted);">實質累積：<span id="totalTime">00:00</span></div>
+                <div>坡度：<span id="incline">--</span>%</div>
+                <div>速度：<span id="speed">--</span> km/h</div>
+                <div>心率：<span id="hr">--</span></div>
+                <div style="margin-top: 5px; color: var(--text-muted); font-size: 1.1rem;">實質累積：<span id="totalTime">00:00</span></div>
             </div>
             <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
         </div>
-        <div class="control-group">
-            <button id="playBtn" class="btn-start" onclick="toggle()">開始運動</button>
-            <button id="sideBtn" class="btn-gray" onclick="handleSideBtn()">回設定</button>
+        <div class="button-area">
+            <div class="control-group">
+                <button id="playBtn" class="btn-start" onclick="toggle()">開始運動</button>
+                <button id="sideBtn" class="btn-gray" onclick="handleSideBtn()">回設定</button>
+            </div>
         </div>
     </div>
 
-    <div id="resultView" class="view-section">
-        <div class="result-card">
-            <div class="result-title">訓練完成</div>
-            <div class="result-label" style="font-weight:900; color:var(--text-muted);">累積運動時間</div>
-            <div id="resTotalTime" class="result-value">00:00</div>
-            <div class="result-label" style="font-weight:900; color:var(--text-muted); margin-top:20px;">最高挑戰</div>
-            <div id="resMaxStage" class="result-value" style="font-size: 2.5rem;">--</div>
-            <div style="flex: 1;"></div>
-            <button class="btn-result" onclick="goBackToSetup()">返回主頁面</button>
+    <div id="resultView" class="view-section" style="justify-content: center; text-align: center;">
+        <h1 style="font-size: 2.5rem; font-weight: 900;">訓練完成</h1>
+        <div style="margin: 30px 0;">
+            <div style="color: var(--text-muted); font-weight: 900;">累積運動時間</div>
+            <div id="resTotalTime" style="font-size: 4rem; font-weight: 900;">00:00</div>
         </div>
+        <button class="btn-finish" onclick="location.reload()">返回設定</button>
     </div>
 
 <script>
@@ -191,17 +198,7 @@
         { n: "緩和", d: 5, i: "0", s: "5", h: "回到第 1 區間", bg: "#ffffff" }
     ];
 
-    let idx = 0, sec = 0, total = 0, run = false, timerInterval, wakeLock = null, maxIdxReached = 0;
-
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playBeep(freq, duration) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-        osc.start(); osc.stop(audioCtx.currentTime + duration);
-    }
+    let idx = 0, sec = 0, total = 0, run = false, timerInterval;
 
     const list = document.getElementById('inputsList');
     stages.forEach((s, i) => {
@@ -209,7 +206,7 @@
             <div class="setup-card" style="border-left: 8px solid ${s.bg}">
                 <div style="font-weight:900">${s.n}</div>
                 <input type="number" id="t-${i}" value="${s.d}" oninput="calcTotal()">
-                <div style="text-align:right; font-weight:900; font-size:0.8rem">min</div>
+                <div style="text-align:right; font-weight:900; color:var(--text-muted); padding-left:5px">min</div>
             </div>
         `;
     });
@@ -220,8 +217,6 @@
         document.getElementById('setupTotal').innerText = t;
     }
 
-    async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
-
     function switchView(viewId) {
         document.querySelectorAll('.view-section').forEach(v => v.style.display = 'none');
         document.getElementById(viewId).style.display = 'flex';
@@ -229,34 +224,15 @@
 
     function startWorkout() {
         stages.forEach((s, i) => { s.d = parseInt(document.getElementById(`t-${i}`).value) || 1; });
-        idx = 0; sec = 0; total = 0; maxIdxReached = 0;
+        idx = 0; sec = 0; total = 0;
         switchView('workoutView');
-        resetUI();
-    }
-
-    function handleSideBtn() {
-        if (!run && total > 0) { showSummary(); } else { goBackToSetup(); }
-    }
-
-    function showSummary() {
-        clearInterval(timerInterval);
-        if (wakeLock) try { wakeLock.release(); } catch(e) {}
-        document.getElementById('resTotalTime').innerText = fmt(total);
-        document.getElementById('resMaxStage').innerText = stages[maxIdxReached].n;
-        switchView('resultView');
-    }
-
-    function goBackToSetup() {
-        clearInterval(timerInterval);
-        if (wakeLock) try { wakeLock.release(); } catch(e) {}
-        switchView('setupView');
+        updateUI();
     }
 
     function updateUI() {
         const s = stages[idx];
         const rem = (s.d * 60) - sec;
-        const totalSec = s.d * 60;
-        document.getElementById('progressFill').style.width = `${(sec / totalSec) * 100}%`;
+        document.getElementById('progressFill').style.width = `${(sec / (s.d * 60)) * 100}%`;
         document.querySelectorAll('.stage-box').forEach((b, i) => b.classList.toggle('active', i === idx));
         document.getElementById('mainDisplay').style.backgroundColor = s.bg;
         document.getElementById('timer').innerText = fmt(rem);
@@ -264,48 +240,36 @@
         document.getElementById('speed').innerText = s.s;
         document.getElementById('hr').innerText = s.h;
         document.getElementById('totalTime').innerText = fmt(total);
-
-        if (run && rem <= 3 && rem > 0) playBeep(880, 0.05);
-        if (run && rem === 0) playBeep(1320, 0.3);
     }
 
     function toggle() {
         run = !run;
         const btn = document.getElementById('playBtn');
-        const sideBtn = document.getElementById('sideBtn');
         if (run) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            requestWakeLock();
             btn.innerText = "暫停"; btn.classList.add('btn-red');
-            sideBtn.innerText = "回設定"; sideBtn.classList.remove('btn-red');
             timerInterval = setInterval(() => {
                 sec++; total++;
                 if (sec >= stages[idx].d * 60) {
-                    if (idx < 5) { idx++; sec = 0; if(idx > maxIdxReached) maxIdxReached = idx; } 
-                    else { showSummary(); return; }
+                    if (idx < 5) { idx++; sec = 0; } 
+                    else { clearInterval(timerInterval); switchView('resultView'); document.getElementById('resTotalTime').innerText = fmt(total); return; }
                 }
                 updateUI();
             }, 1000);
         } else {
             btn.innerText = "繼續運動"; btn.classList.remove('btn-red');
-            sideBtn.innerText = "結束運動"; sideBtn.classList.add('btn-red');
             clearInterval(timerInterval);
         }
     }
 
-    function jump(i) {
-        idx = i; sec = 0; if(idx > maxIdxReached) maxIdxReached = idx; updateUI();
+    function handleSideBtn() {
+        if (!run && total > 0) {
+            if(confirm("結束運動並結算？")) { switchView('resultView'); document.getElementById('resTotalTime').innerText = fmt(total); }
+        } else {
+            location.reload();
+        }
     }
 
-    function resetUI() {
-        clearInterval(timerInterval); run = false;
-        const btn = document.getElementById('playBtn');
-        const sideBtn = document.getElementById('sideBtn');
-        btn.innerText = "開始運動"; btn.classList.remove('btn-red');
-        sideBtn.innerText = "回設定"; sideBtn.classList.remove('btn-red');
-        updateUI();
-    }
-
+    function jump(i) { idx = i; sec = 0; updateUI(); }
     function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
 
     calcTotal();
