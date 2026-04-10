@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2訓練儀表板</title>
+    <title>Zone2 訓練儀表板 V21</title>
     <style>
         :root {
             --bg-page: #f5f5f7;
@@ -28,34 +28,34 @@
         .view-section { display: none; flex-direction: column; height: 100%; }
         #setupView { display: flex; }
 
-        /* --- 設定畫面：極致壓縮版 --- */
+        /* --- 設定畫面 --- */
         .setup-header { text-align: center; padding: 10px 0; flex-shrink: 0; }
         .setup-title { font-size: 1.4rem; font-weight: 900; margin: 0; }
-        
+        .total-summary { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; font-weight: 600; }
+        .total-big { color: var(--text-dark); font-size: 1.2rem; font-weight: 900; }
+
         .inputs-list { 
             flex: 1; 
             display: flex; 
             flex-direction: column; 
-            gap: 6px; /* 縮小卡片間距 */
+            gap: 6px; 
             padding-bottom: 5px;
         }
         
         .setup-card {
             display: grid;
-            grid-template-columns: 20px 1.2fr 1fr 1fr 1fr; /* 編號 | 階段名 | 時間 | 坡度 | 速度 */
+            grid-template-columns: 1.5fr 1fr 1fr 1fr; 
             align-items: center;
-            gap: 5px;
-            padding: 8px 10px;
+            gap: 8px;
+            padding: 8px 15px;
             border-radius: 12px; 
             background: #fff;
             box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-            flex: 1; /* 讓六張卡片平分剩餘高度 */
-            min-height: 0; /* 允許縮小 */
+            flex: 1; 
+            min-height: 0;
         }
 
-        .card-no { font-weight: 900; font-size: 0.8rem; color: var(--text-muted); }
-        .card-name { font-weight: 900; font-size: 0.9rem; white-space: nowrap; overflow: hidden; }
-        
+        .card-name { font-weight: 900; font-size: 1rem; color: var(--text-dark); }
         .input-group { display: flex; flex-direction: column; align-items: center; gap: 2px; }
         .input-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); }
         
@@ -70,15 +70,16 @@
             width: 100%;
         }
 
-        /* --- 運動畫面維持不變 --- */
+        /* --- 運動畫面 --- */
         #workoutView { display: none; }
         .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; padding: 10px 0; flex-shrink: 0;}
         .stage-box {
             padding: 10px 0; border-radius: 8px; text-align: center;
             font-weight: 900; font-size: 0.75rem; color: var(--text-muted);
-            background: #fff; cursor: pointer;
+            background: #fff; cursor: pointer; transition: background-color 0.2s;
         }
-        .stage-box.active { background: #000; color: #fff; } /* 簡化 Active 顯示 */
+        /* 選中時不位移、不加框，僅變色 */
+        .stage-box.active { background: #1d1d1f !important; color: #fff !important; }
 
         .main-display {
             flex: 1; margin: 5px 0; border-radius: 24px;
@@ -92,16 +93,17 @@
         .button-area { padding: 10px 0; flex-shrink: 0; }
         button { 
             border: none; padding: 15px; font-size: 1.2rem; font-weight: 900; border-radius: 18px;
-            cursor: pointer; width: 100%; height: 55px; 
+            cursor: pointer; width: 100%; height: 55px; transition: opacity 0.2s;
         }
+        button:active { opacity: 0.8; }
         .btn-finish, .btn-start { background: var(--btn-blue-bg); color: #fff; }
         .btn-gray { background: #e8e8ed; color: var(--text-dark); }
         .control-group { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
 
         @media (max-height: 670px) {
-            .setup-title { font-size: 1.2rem; }
+            .setup-title { font-size: 1.1rem; }
+            .timer-text { font-size: 4.5rem; }
             .card-name { font-size: 0.8rem; }
-            .setup-card input { font-size: 0.9rem; padding: 2px; }
         }
     </style>
 </head>
@@ -109,7 +111,8 @@
 
     <div id="setupView" class="view-section">
         <div class="setup-header">
-            <h1 class="setup-title">設定訓練參數</h1>
+            <h1 class="setup-title">訓練參數設定</h1>
+            <div class="total-summary">預計訓練總時長：<span class="total-big" id="setupTotal">60</span> 分鐘</div>
         </div>
         <div class="inputs-list" id="inputsList"></div>
         <div class="button-area">
@@ -120,7 +123,7 @@
     <div id="workoutView" class="view-section">
         <div class="stage-grid" id="stageGrid"></div>
         <div class="main-display" id="mainDisplay">
-            <div id="curStageName" style="font-weight: 900; color: var(--text-muted);">區段剩餘時間</div>
+            <div id="curStageName" style="font-weight: 900; color: var(--text-muted); font-size: 1rem;">區段剩餘時間</div>
             <div class="timer-text" id="timer">00:00</div>
             <div class="info-row">
                 <div>坡度：<span id="incline">--</span>%</div>
@@ -146,26 +149,35 @@
         { n: "緩和", d: 5, i: 0, s: 5, bg: "#ffffff" }
     ];
 
-    let stages = JSON.parse(localStorage.getItem('zone2_v19_config')) || defaultData;
+    let stages = JSON.parse(localStorage.getItem('zone2_v21_config')) || defaultData;
     let idx = 0, sec = 0, total = 0, run = false, timerInterval;
 
     // --- 初始化設定列表 ---
-    const list = document.getElementById('inputsList');
     function initSetup() {
+        const list = document.getElementById('inputsList');
         list.innerHTML = '';
         stages.forEach((s, i) => {
             const card = document.createElement('div');
             card.className = 'setup-card';
-            card.style.borderLeft = `6px solid ${s.bg}`;
+            card.style.borderLeft = `8px solid ${s.bg}`;
             card.innerHTML = `
-                <div class="card-no">${i+1}</div>
                 <div class="card-name">${s.n}</div>
-                <div class="input-group"><span class="input-label">時間</span><input type="number" inputmode="numeric" id="d-${i}" value="${s.d}" onclick="this.select()"></div>
+                <div class="input-group"><span class="input-label">時間</span><input type="number" inputmode="numeric" id="d-${i}" value="${s.d}" oninput="calcTotal()" onclick="this.select()"></div>
                 <div class="input-group"><span class="input-label">坡度</span><input type="number" inputmode="numeric" id="i-${i}" value="${s.i}" onclick="this.select()"></div>
                 <div class="input-group"><span class="input-label">速度</span><input type="number" inputmode="decimal" id="s-${i}" value="${s.s}" step="0.1" onclick="this.select()"></div>
             `;
             list.appendChild(card);
         });
+        calcTotal();
+    }
+
+    function calcTotal() {
+        let t = 0;
+        stages.forEach((_, i) => {
+            const val = parseInt(document.getElementById(`d-${i}`).value);
+            t += isNaN(val) ? 0 : val;
+        });
+        document.getElementById('setupTotal').innerText = t;
     }
 
     // --- 運動邏輯 ---
@@ -175,9 +187,8 @@
             s.i = document.getElementById(`i-${i}`).value || 0;
             s.s = document.getElementById(`s-${i}`).value || 5;
         });
-        localStorage.setItem('zone2_v19_config', JSON.stringify(stages));
+        localStorage.setItem('zone2_v21_config', JSON.stringify(stages));
         
-        // 生成頂部按鈕
         const grid = document.getElementById('stageGrid');
         grid.innerHTML = '';
         stages.forEach((s, i) => {
@@ -192,15 +203,18 @@
 
     function updateUI() {
         const s = stages[idx];
-        document.getElementById('curStageName').innerText = `${idx+1}. ${s.n} (剩餘時間)`;
+        document.getElementById('curStageName').innerText = `${s.n} (剩餘時間)`;
         document.getElementById('timer').innerText = fmt((s.d * 60) - sec);
         document.getElementById('incline').innerText = s.i;
         document.getElementById('speed').innerText = s.s;
         document.getElementById('totalTime').innerText = fmt(total);
         document.getElementById('mainDisplay').style.backgroundColor = s.bg;
         document.querySelectorAll('.stage-box').forEach((b, i) => {
-            b.style.background = (i === idx) ? '#1d1d1f' : '#fff';
-            b.style.color = (i === idx) ? '#fff' : '#86868b';
+            if (i === idx) {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
         });
     }
 
