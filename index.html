@@ -14,7 +14,7 @@
             --c4: #fff3e0; --c5: #fce4ec; --c6: #ffffff;
             --btn-blue-bg: #40b0e5;
             --prep-bg: #e5e5e7;
-            --flash-red: rgba(255, 59, 48, 0.3); /* 閃爍用的淡紅色 */
+            --flash-red: rgba(255, 59, 48, 0.3);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -47,16 +47,16 @@
         .stage-box.active { background: #1d1d1f !important; color: #fff !important; }
 
         .main-display {
-            flex: 1; margin: 5px 0; border-radius: 24px; display: flex; flex-direction: column; 
+            flex: 1; margin: 5px 0; border-radius: 28px; display: flex; flex-direction: column; 
             justify-content: center; padding: 20px; background-color: var(--card-white);
             position: relative; overflow: hidden; transition: background-color 0.15s ease;
         }
         
-        /* 強化閃爍效果 */
         .flash-active { background-color: var(--flash-red) !important; }
 
         .timer-text { font-size: 6rem; font-weight: 900; line-height: 1; text-align: center; letter-spacing: -2px; }
         .info-row { font-size: 1.3rem; font-weight: 900; line-height: 1.7; margin-top: 10px; }
+        .target-label { font-size: 0.8rem; vertical-align: middle; color: #ff3b30; margin-right: 4px; }
 
         /* --- 按鈕 --- */
         .button-area { padding: 10px 0; flex-shrink: 0; }
@@ -91,9 +91,9 @@
             <div id="curStageName" style="font-weight: 900; color: var(--text-muted); font-size: 1.1rem;">準備中</div>
             <div class="timer-text" id="timer">00:00</div>
             <div class="info-row" id="infoRow">
-                <div>坡度：<span id="incline">--</span>%</div>
-                <div>速度：<span id="speed">--</span> km/h</div>
-                <div>累積時間：<span id="totalTime">00:00</span></div>
+                <div><span id="inclineLabel"></span>坡度：<span id="incline">--</span>%</div>
+                <div><span id="speedLabel"></span>速度：<span id="speed">--</span> km/h</div>
+                <div id="totalTimeRow">累積時間：<span id="totalTime">00:00</span></div>
             </div>
         </div>
         <div class="button-area">
@@ -209,21 +209,34 @@
     function updateUI() {
         const s = stages[idx];
         const display = document.getElementById('mainDisplay');
-        const infoRow = document.getElementById('infoRow');
+        const totalTimeRow = document.getElementById('totalTimeRow');
+        const incLabel = document.getElementById('inclineLabel');
+        const spdLabel = document.getElementById('speedLabel');
+        
         document.querySelectorAll('.stage-box').forEach((b, i) => { if (i === idx) b.classList.add('active'); else b.classList.remove('active'); });
 
         if (isPrep) {
             display.style.backgroundColor = "var(--prep-bg)";
             document.getElementById('curStageName').innerText = `即將進入：${s.n}`;
             document.getElementById('timer').innerText = `00:${prepSec.toString().padStart(2, '0')}`;
-            infoRow.style.visibility = "hidden";
+            
+            // Prep 時顯示目標數值
+            incLabel.innerHTML = `<span class="target-label">目標</span>`;
+            spdLabel.innerHTML = `<span class="target-label">目標</span>`;
+            document.getElementById('incline').innerText = s.i;
+            document.getElementById('speed').innerText = s.s;
+            totalTimeRow.style.visibility = "hidden";
         } else {
             display.style.backgroundColor = s.bg;
             document.getElementById('curStageName').innerText = `${s.n}`;
             document.getElementById('timer').innerText = fmt((s.d * 60) - sec);
-            infoRow.style.visibility = "visible";
+            
+            // 正式階段移除目標標籤
+            incLabel.innerHTML = "";
+            spdLabel.innerHTML = "";
             document.getElementById('incline').innerText = s.i;
             document.getElementById('speed').innerText = s.s;
+            totalTimeRow.style.visibility = "visible";
             document.getElementById('totalTime').innerText = fmt(total);
         }
     }
