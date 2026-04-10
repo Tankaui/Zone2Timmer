@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板</title>
+    <title>Zone2 柔和儀表板 V27</title>
     <style>
         :root {
             --bg-page: #f5f5f7;
@@ -14,7 +14,7 @@
             --c4: #fff3e0; --c5: #fce4ec; --c6: #ffffff;
             --btn-blue-bg: #40b0e5;
             --prep-bg: #e5e5e7;
-            --flash-red: rgba(255, 59, 48, 0.3);
+            --flash-red: rgba(255, 59, 48, 0.2);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -26,8 +26,16 @@
             padding: env(safe-area-inset-top) 15px env(safe-area-inset-bottom) 15px;
         }
 
-        .view-section { display: none; flex-direction: column; height: 100%; }
-        #setupView { display: flex; }
+        /* --- 柔和跳轉動畫 --- */
+        .view-section { 
+            display: none; 
+            flex-direction: column; 
+            height: 100%; 
+            padding: 10px 0;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out; /* 畫面切換柔和化 */
+        }
+        .view-section.active-view { display: flex; opacity: 1; }
 
         /* --- 設定畫面 --- */
         .setup-header { text-align: center; padding: 10px 0; flex-shrink: 0; }
@@ -43,24 +51,37 @@
 
         /* --- 運動畫面 --- */
         .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; padding: 10px 0; flex-shrink: 0;}
-        .stage-box { padding: 10px 0; border-radius: 8px; text-align: center; font-weight: 900; font-size: 0.75rem; color: var(--text-muted); background: #fff; cursor: pointer; }
+        .stage-box { padding: 10px 0; border-radius: 8px; text-align: center; font-weight: 900; font-size: 0.75rem; color: var(--text-muted); background: #fff; cursor: pointer; transition: background-color 0.3s, color 0.3s; }
         .stage-box.active { background: #1d1d1f !important; color: #fff !important; }
 
         .main-display {
             flex: 1; margin: 5px 0; border-radius: 28px; display: flex; flex-direction: column; 
             justify-content: center; padding: 20px; background-color: var(--card-white);
-            position: relative; overflow: hidden; transition: background-color 0.15s ease;
+            position: relative; overflow: hidden; 
+            /* 讓背景顏色切換更柔和 */
+            transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        .flash-active { background-color: var(--flash-red) !important; }
+        /* 柔和脈動閃爍動畫 */
+        @keyframes soft-pulse {
+            0% { background-color: transparent; }
+            50% { background-color: var(--flash-red); }
+            100% { background-color: transparent; }
+        }
+        .flash-pulse {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .pulse-active { animation: soft-pulse 0.4s ease-in-out; }
 
         .timer-text { font-size: 6rem; font-weight: 900; line-height: 1; text-align: center; letter-spacing: -2px; }
         .info-row { font-size: 1.3rem; font-weight: 900; line-height: 1.7; margin-top: 10px; }
-        .target-label { font-size: 0.8rem; vertical-align: middle; color: #ff3b30; margin-right: 4px; }
+        .target-label { font-size: 0.8rem; vertical-align: middle; color: #ff3b30; margin-right: 4px; font-weight: 800; }
 
         /* --- 按鈕 --- */
         .button-area { padding: 10px 0; flex-shrink: 0; }
-        button { border: none; padding: 15px; font-size: 1.2rem; font-weight: 900; border-radius: 18px; cursor: pointer; width: 100%; height: 55px; transition: opacity 0.2s; }
+        button { border: none; padding: 15px; font-size: 1.2rem; font-weight: 900; border-radius: 18px; cursor: pointer; width: 100%; height: 55px; transition: background-color 0.3s, opacity 0.2s; }
         .btn-finish, .btn-start { background: var(--btn-blue-bg); color: #fff; }
         .btn-gray { background: #e8e8ed; color: var(--text-dark); }
         .btn-red { background: #ff3b30 !important; color: #fff !important; }
@@ -76,7 +97,7 @@
 </head>
 <body>
 
-    <div id="setupView" class="view-section">
+    <div id="setupView" class="view-section active-view">
         <div class="setup-header">
             <h1 class="setup-title">訓練參數設定</h1>
             <div class="total-summary">預計訓練總時長：<span class="total-big" id="setupTotal">0</span> 分鐘</div>
@@ -88,9 +109,11 @@
     <div id="workoutView" class="view-section">
         <div class="stage-grid" id="stageGrid"></div>
         <div class="main-display" id="mainDisplay">
-            <div id="curStageName" style="font-weight: 900; color: var(--text-muted); font-size: 1.1rem;">準備中</div>
-            <div class="timer-text" id="timer">00:00</div>
-            <div class="info-row" id="infoRow">
+            <div id="flashLayer" class="flash-pulse"></div>
+            
+            <div id="curStageName" style="font-weight: 900; color: var(--text-muted); font-size: 1.1rem; z-index: 2;">準備中</div>
+            <div class="timer-text" id="timer" style="z-index: 2;">00:00</div>
+            <div class="info-row" id="infoRow" style="z-index: 2;">
                 <div><span id="inclineLabel"></span>坡度：<span id="incline">--</span>%</div>
                 <div><span id="speedLabel"></span>速度：<span id="speed">--</span> km/h</div>
                 <div id="totalTimeRow">累積時間：<span id="totalTime">00:00</span></div>
@@ -135,14 +158,31 @@
         const gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    function flashRed() {
-        const el = document.getElementById('mainDisplay');
-        el.classList.add('flash-active');
-        setTimeout(() => el.classList.remove('flash-active'), 150);
+    // 柔和閃爍
+    function softFlash() {
+        const layer = document.getElementById('flashLayer');
+        layer.classList.remove('pulse-active');
+        void layer.offsetWidth; // 觸發重繪
+        layer.classList.add('pulse-active');
+    }
+
+    function switchView(id) {
+        const current = document.querySelector('.view-section.active-view');
+        if (current) current.classList.remove('active-view');
+        
+        const next = document.getElementById(id);
+        next.style.display = 'flex';
+        // 使用 setTimeout 確保 display: flex 已經生效，轉場動畫才會跑
+        setTimeout(() => next.classList.add('active-view'), 50);
+        
+        // 隱藏非當前 view (動畫跑完後)
+        document.querySelectorAll('.view-section').forEach(v => {
+            if (v.id !== id) setTimeout(() => { if (!v.classList.contains('active-view')) v.style.display = 'none'; }, 400);
+        });
     }
 
     function initSetup() {
@@ -170,11 +210,6 @@
             if(el) t += parseInt(el.value) || 0;
         });
         document.getElementById('setupTotal').innerText = t;
-    }
-
-    function switchView(id) {
-        document.querySelectorAll('.view-section').forEach(v => v.style.display = 'none');
-        document.getElementById(id).style.display = 'flex';
     }
 
     function startWorkout() {
@@ -219,8 +254,6 @@
             display.style.backgroundColor = "var(--prep-bg)";
             document.getElementById('curStageName').innerText = `即將進入：${s.n}`;
             document.getElementById('timer').innerText = `00:${prepSec.toString().padStart(2, '0')}`;
-            
-            // Prep 時顯示目標數值
             incLabel.innerHTML = `<span class="target-label">目標</span>`;
             spdLabel.innerHTML = `<span class="target-label">目標</span>`;
             document.getElementById('incline').innerText = s.i;
@@ -230,10 +263,7 @@
             display.style.backgroundColor = s.bg;
             document.getElementById('curStageName').innerText = `${s.n}`;
             document.getElementById('timer').innerText = fmt((s.d * 60) - sec);
-            
-            // 正式階段移除目標標籤
-            incLabel.innerHTML = "";
-            spdLabel.innerHTML = "";
+            incLabel.innerHTML = ""; spdLabel.innerHTML = "";
             document.getElementById('incline').innerText = s.i;
             document.getElementById('speed').innerText = s.s;
             totalTimeRow.style.visibility = "visible";
@@ -251,8 +281,8 @@
             const s = stages[idx];
             const rem = (s.d * 60) - sec;
             if (run) {
-                if (rem === 30) { playBeep(600, 0.2); flashRed(); }
-                if (rem <= 5 && rem > 0) { playBeep(1000, 0.1); flashRed(); }
+                if (rem === 30) { playBeep(600, 0.2); softFlash(); }
+                if (rem <= 5 && rem > 0) { playBeep(1000, 0.1); softFlash(); }
             }
             if (sec >= s.d * 60) {
                 if (idx < 5) { idx++; sec = 0; isPrep = true; prepSec = 10; } 
@@ -267,11 +297,11 @@
         const btn = document.getElementById('playBtn');
         const sideBtn = document.getElementById('sideBtn');
         if (run) {
-            btn.innerText = "暫停"; btn.style.background = "#ff4d4f";
+            btn.innerText = "暫停"; btn.classList.add('btn-red');
             sideBtn.innerText = "回設定"; sideBtn.classList.remove('btn-red');
             timerInterval = setInterval(tick, 1000);
         } else {
-            btn.innerText = "繼續運動"; btn.style.background = "var(--btn-blue-bg)";
+            btn.innerText = "繼續運動"; btn.classList.remove('btn-red');
             sideBtn.innerText = "結束運動"; sideBtn.classList.add('btn-red');
             clearInterval(timerInterval);
         }
