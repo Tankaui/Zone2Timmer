@@ -166,7 +166,7 @@
         <div class="setup-header">
             <h1 class="setup-title">設定各階段目標</h1>
             <div class="total-summary">訓練總時長：<span id="setupTotal" style="font-weight: 900; color: var(--text-dark);">60</span> 分鐘</div>
-            <div id="themeBtn" class="theme-toggle-btn" onclick="toggleTheme()"></div>
+            <div id="themeBtn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="切換深淺色模式" title="切換深淺色模式"></div>
         </div>
         <div class="inputs-list" id="inputsList"></div>
         <div class="button-area">
@@ -292,6 +292,11 @@
     let stages = [], stageTimeTracker = [0, 0, 0, 0, 0, 0]; 
     let idx = 0, sec = 0, total = 0, run = false, timerInterval;
     let isPrep = false, prepSec = 10, wakeLock = null;
+    
+    // Timer Drift 修復變數
+    let referenceTime = 0;
+    // iOS Audio 解鎖標記
+    let audioUnlocked = false;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playBeep(freq, duration) {
@@ -303,6 +308,18 @@
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
+    // 強制解鎖 iOS 靜音機制
+    function unlockAudio() {
+        if (audioUnlocked) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        gain.gain.value = 0; // 靜音
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.01);
+        audioUnlocked = true;
+    }
+
     async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} }
     function releaseWakeLock() { if (wakeLock) { wakeLock.release(); wakeLock = null; } }
 
@@ -311,6 +328,14 @@
         const isDark = document.body.classList.contains('dark-theme');
         localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
         document.getElementById('themeBtn').innerHTML = isDark ? sunIcon : moonIcon;
+    }
+
+    // 表單防呆驗證 (處理輸入空白、負數等問題)
+    function validateInput(el, min, max) {
+        let val = parseFloat(el.value);
+        if (isNaN(val) || val < min) el.value = min;
+        if (val > max) el.value = max;
+        calcTotal();
     }
 
     function initSetup() {
@@ -326,11 +351,12 @@
         const list = document.getElementById('inputsList');
         list.innerHTML = '';
         stages.forEach((s, i) => {
+            // 時間下限改為 0，並加上 onblur 驗證
             list.innerHTML += `<div class="setup-card" style="border-left-color: ${s.bg}">
                 <div class="card-name">${s.n}</div>
-                <div class="input-group"><span class="input-label">時間</span><input type="number" id="d-${i}" value="${s.d}" oninput="calcTotal()" onclick="this.select()"></div>
-                <div class="input-group"><span class="input-label">坡度</span><input type="number" id="i-${i}" value="${s.i}" onclick="this.select()"></div>
-                <div class="input-group"><span class="input-label">速度</span><input type="number" id="s-${i}" value="${s.s}" step="0.1" onclick="this.select()"></div>
+                <div class="input-group"><span class="input-label">時間</span><input type="number" id="d-${i}" value="${s.d}" min="0" onblur="validateInput(this, 0, 180)" oninput="calcTotal()" onclick="this.select()"></div>
+                <div class="input-group"><span class="input-label">坡度</span><input type="number" id="i-${i}" value="${s.i}" min="0" onblur="validateInput(this, 0, 40)" onclick="this.select()"></div>
+                <div class="input-group"><span class="input-label">速度</span><input type="number" id="s-${i}" value="${s.s}" step="0.1" min="0.1" onblur="validateInput(this, 0.1, 30)" onclick="this.select()"></div>
             </div>`;
         });
         calcTotal();
@@ -353,17 +379,33 @@
     }
 
     function startWorkout() {
+        let hasValidStage = false;
         stages.forEach((s, i) => { 
-            s.d = parseInt(document.getElementById(`d-${i}`).value) || 1; 
+            let dVal = parseInt(document.getElementById(`d-${i}`).value);
+            s.d = isNaN(dVal) ? 0 : dVal; // 允許 0
             s.i = document.getElementById(`i-${i}`).value || 0;
             s.s = parseFloat(document.getElementById(`s-${i}`).value) || 5;
+            if (s.d > 0) hasValidStage = true;
         });
+
+        if (!hasValidStage) return alert("請至少設定一個階段的時間大於 0 分鐘");
+
         localStorage.setItem(STORAGE_KEY, JSON.stringify(stages));
+        
         const grid = document.getElementById('stageGrid');
         grid.innerHTML = '';
-        stages.forEach((s, i) => { grid.innerHTML += `<div class="stage-box s-${i}" onclick="jump(${i})">${s.n}</div>`; });
-        idx = 0; sec = 0; total = 0; isPrep = true; prepSec = 10;
-        stageTimeTracker.fill(0);
+        stages.forEach((s, i) => { 
+            // 針對 0 分鐘的階段淡化並禁用點擊
+            let dimStyle = s.d <= 0 ? "opacity: 0.3; pointer-events: none;" : "";
+            grid.innerHTML += `<div class="stage-box s-${i}" style="${dimStyle}" onclick="jump(${i})">${s.n}</div>`; 
+        });
+
+        idx = 0; sec = 0; total = 0; stageTimeTracker.fill(0);
+        
+        // 尋找第一個時間 > 0 的階段
+        while (idx < stages.length && stages[idx].d <= 0) { idx++; }
+        
+        isPrep = true; prepSec = 10;
         switchView('workoutView');
         updateUI();
     }
@@ -400,33 +442,57 @@
         document.getElementById('speed').innerText = s.s;
     }
 
-    function tick() {
+    // 將原本的 tick 抽離，只負責單次推進邏輯
+    function tickLogic() {
         if (isPrep) {
             prepSec--;
-            if (run && prepSec <= 3 && prepSec > 0) playBeep(800, 0.1);
-            if (prepSec <= 0) { isPrep = false; if (run) playBeep(1200, 0.4); }
+            if (prepSec <= 3 && prepSec > 0) playBeep(800, 0.1);
+            if (prepSec <= 0) { isPrep = false; playBeep(1200, 0.4); }
         } else {
             sec++; total++; stageTimeTracker[idx]++;
             const rem = (stages[idx].d * 60) - sec;
-            if (run && (rem === 30 || (rem <= 5 && rem > 0))) { playBeep(rem === 30 ? 600 : 1000, 0.1); softFlash(); }
+            if (rem === 30 || (rem <= 5 && rem > 0)) { playBeep(rem === 30 ? 600 : 1000, 0.1); softFlash(); }
+            
             if (sec >= stages[idx].d * 60) {
-                if (idx < 5) { idx++; sec = 0; isPrep = true; prepSec = 10; } 
-                else { showSummary(); return; }
+                idx++;
+                // 自動跳過所有時間設定為 0 的階段
+                while (idx < stages.length && stages[idx].d <= 0) { idx++; }
+                
+                if (idx < stages.length) { 
+                    sec = 0; isPrep = true; prepSec = 10; 
+                } else { 
+                    showSummary(); return; 
+                }
             }
         }
         updateUI();
     }
 
     function toggle() {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        unlockAudio();
         run = !run;
         const btn = document.getElementById('playBtn');
         const side = document.getElementById('sideBtn');
+        
         if (run) {
             requestWakeLock();
             btn.innerText = "暫停"; btn.classList.add('btn-red');
             side.innerText = "回設定"; side.classList.remove('btn-red');
-            timerInterval = setInterval(tick, 1000);
+            
+            referenceTime = Date.now();
+            // 改為高頻率偵測，徹底解決 setInterval 時間流失誤差
+            timerInterval = setInterval(() => {
+                let now = Date.now();
+                let elapsed = now - referenceTime;
+                if (elapsed >= 1000) {
+                    let ticksToFire = Math.floor(elapsed / 1000);
+                    referenceTime += ticksToFire * 1000;
+                    // 一次性補足流失的秒數（防休眠）
+                    for (let i = 0; i < ticksToFire; i++) {
+                        tickLogic();
+                    }
+                }
+            }, 200);
         } else {
             releaseWakeLock();
             btn.innerText = "繼續運動"; btn.classList.remove('btn-red');
@@ -451,13 +517,18 @@
         const barBottom = document.getElementById('resultBarBottom');
         barTop.innerHTML = ''; barBottom.innerHTML = '';
         stages.forEach(s => {
+            // 若該階段為 0，維持外觀長度，或可考慮不渲染
             const dot = `<div class="prog-dot" style="background:${s.bg}"></div>`;
             barTop.innerHTML += dot; barBottom.innerHTML += dot;
         });
         switchView('resultView');
     }
 
-    function jump(i) { idx = i; sec = 0; isPrep = true; prepSec = 10; updateUI(); }
+    function jump(i) { 
+        if (stages[i].d <= 0) return alert("該階段時間已設定為 0 分鐘，無法跳轉");
+        idx = i; sec = 0; isPrep = true; prepSec = 10; updateUI(); 
+    }
+    
     function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
     function softFlash() { const l = document.getElementById('flashLayer'); l.classList.remove('pulse-active'); void l.offsetWidth; l.classList.add('pulse-active'); }
 
@@ -470,7 +541,7 @@
         stages = originalStages.map((b, i) => {
             let d = Math.round((t/60)*b.d);
             if (i === 5) d = t - acc; else acc += d;
-            return { ...b, d: Math.max(1, d), s: Math.round((h/186)*b.s*10)/10 };
+            return { ...b, d: Math.max(0, d), s: Math.round((h/186)*b.s*10)/10 };
         });
         renderSetupList(); switchView('setupView');
     }
@@ -493,6 +564,14 @@
         reader.readAsText(file);
     }
 
+    function resetSettings() {
+        if (confirm("確定要恢復預設設定嗎？這將清除目前的自訂參數。")) {
+            localStorage.removeItem(STORAGE_KEY);
+            stages = JSON.parse(JSON.stringify(originalStages));
+            renderSetupList();
+        }
+    }
+
     async function shareResult() {
         const btn = document.getElementById('shareBtn');
         btn.innerText = "產生圖片中...";
@@ -510,15 +589,6 @@
                 btn.innerText = "分享與儲存";
             });
         } catch (e) { alert("截圖失敗"); document.getElementById('actionButtons').style.display = 'grid'; }
-    }
-
-    // 新增的恢復預設函數
-    function resetSettings() {
-        if (confirm("確定要恢復預設設定嗎？這將清除目前的自訂參數。")) {
-            localStorage.removeItem(STORAGE_KEY);
-            stages = JSON.parse(JSON.stringify(originalStages));
-            renderSetupList();
-        }
     }
 
     initSetup();
