@@ -100,14 +100,30 @@
         .flash-pulse { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
         .pulse-active { animation: soft-pulse 0.4s ease-in-out; }
 
+        /* --- 按鈕樣式 --- */
         .button-area { padding: 15px 0; flex-shrink: 0; width: 100%; }
-        button { border: none; padding: 18px; font-size: 1.3rem; font-weight: 900; border-radius: 20px; cursor: pointer; width: 100%; height: 65px; transition: opacity 0.2s; white-space: nowrap; -webkit-user-select: none; user-select: none; }
+        button { border: none; padding: 18px; font-size: 1.3rem; font-weight: 900; border-radius: 20px; cursor: pointer; width: 100%; height: 65px; transition: opacity 0.2s, background-color 0.2s; white-space: nowrap; -webkit-user-select: none; user-select: none; }
         button:active { opacity: 0.8; }
         .btn-finish, .btn-start { background: var(--btn-blue-bg); color: #fff; }
         .btn-gray { background: var(--input-bg); color: var(--text-dark); border: 1px solid var(--input-border); }
         .btn-red { background: #ff3b30 !important; color: #fff !important; }
+        
+        /* 輔助型小按鈕 (導出/導入專用) */
+        .btn-small { 
+            padding: 0; 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            height: 38px; 
+            border-radius: 12px; 
+            background: transparent; 
+            color: var(--text-muted); 
+            border: 1px dashed var(--input-border); 
+        }
+        .btn-small:active { background: var(--input-bg); }
+
         .control-group { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; width: 100%; }
         .control-group button { font-size: 1.15rem; }
+        .control-group-small { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-bottom: 12px; }
 
         /* --- 結算畫面 --- */
         #resultView { background-color: var(--bg-page); padding: 0; overflow: hidden; }
@@ -193,9 +209,9 @@
         </div>
         <div class="inputs-list" id="inputsList"></div>
         <div class="button-area">
-            <div class="control-group" style="grid-template-columns: 1fr 1fr; margin-bottom: 10px;">
-                <button class="btn-gray" onclick="exportSettings()">導出設定檔</button>
-                <button class="btn-gray" onclick="document.getElementById('importFile').click()">導入設定檔</button>
+            <div class="control-group-small">
+                <button class="btn-small" onclick="exportSettings()">導出設定檔</button>
+                <button class="btn-small" onclick="document.getElementById('importFile').click()">導入設定檔</button>
                 <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importSettings(event)">
             </div>
             
@@ -428,9 +444,9 @@
         }
     }
 
-    // --- 檔案導出功能 ---
+    // --- 檔案導出功能 (已修正為強制二進位下載) ---
     function exportSettings() {
-        // 即時抓取畫面上當前的輸入值，以免使用者修改後還沒開始訓練就導出
+        // 即時抓取畫面上當前的輸入值
         const currentStages = stages.map((s, i) => {
             const d = parseInt(document.getElementById(`d-${i}`).value) || 1;
             const inc = document.getElementById(`i-${i}`).value || 0;
@@ -438,15 +454,14 @@
             return { ...s, d: d, i: inc, s: spd };
         });
 
-        // 轉換為 JSON 字串
         const dataStr = JSON.stringify(currentStages, null, 2);
         
-        // 建立 Blob 實體檔案
-        const blob = new Blob([dataStr], { type: "application/json" });
+        // 使用 application/octet-stream 強制瀏覽器觸發下載行為，避免在新分頁開啟文字
+        const blob = new Blob([dataStr], { type: "application/octet-stream" });
         const url = URL.createObjectURL(blob);
         
-        // 建立隱藏的 a 標籤來觸發下載
         const a = document.createElement('a');
+        a.style.display = 'none';
         a.href = url;
         const dateStr = new Date().toISOString().split('T')[0];
         a.download = `Zone2_Settings_${dateStr}.json`;
@@ -454,9 +469,10 @@
         document.body.appendChild(a);
         a.click();
         
-        // 清理記憶體
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
     }
 
     // --- 檔案導入功能 ---
@@ -469,10 +485,9 @@
             try {
                 const importedData = JSON.parse(e.target.result);
                 
-                // 簡單驗證檔案格式 (確認是陣列且長度與當前階段數相同)
+                // 簡單驗證檔案格式
                 if (Array.isArray(importedData) && importedData.length === stages.length) {
                     stages = importedData;
-                    // 同步寫入 localStorage 以免重整遺失
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(stages));
                     renderSetupList();
                     alert("設定檔導入成功！");
@@ -482,7 +497,6 @@
             } catch (error) {
                 alert("讀取檔案失敗或格式不正確，請確認上傳的為 JSON 檔！");
             }
-            // 重置 file input 的值，這樣連續導入同一個檔案才會觸發 onchange
             event.target.value = '';
         };
         reader.readAsText(file);
