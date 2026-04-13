@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 v45.8.9</title>
+    <title>Zone2 訓練儀表板 v45.9.0</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -56,21 +56,65 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         
-        html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
+        html, body { 
+            margin: 0; padding: 0; 
+            height: 100dvh; width: 100vw; 
+            overflow: hidden;
+            position: fixed; /* 防止橡皮筋效應導致的位移 */
+        }
 
         body { 
             font-family: -apple-system, "Noto Sans TC", sans-serif; 
             background-color: var(--bg-page); color: var(--text-dark); 
-            height: 100vh; height: 100dvh; 
             display: flex; flex-direction: column;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-            overscroll-behavior-y: none;
+            overscroll-behavior: none;
             -webkit-text-size-adjust: 100%;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        .view-section { display: none; flex-direction: column; flex: 1; height: 100%; width: 100%; padding: 10px 20px; opacity: 0; transition: opacity 0.4s ease-in-out; position: relative; overflow: hidden; }
-        .view-section.active-view { display: flex; opacity: 1; }
+        /* 視圖切換容器，防止抖動核心 */
+        .view-wrapper {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .view-section { 
+            position: absolute;
+            top: 0; left: 0;
+            display: none; 
+            flex-direction: column; 
+            height: 100%; 
+            width: 100%; 
+            padding: 10px 20px; 
+            opacity: 0; 
+            transition: opacity 0.3s ease-in-out; 
+            overflow: hidden; 
+            z-index: 1;
+        }
+        .view-section.active-view { 
+            display: flex; 
+            opacity: 1; 
+            z-index: 2;
+        }
+
+        /* 橫式鎖定遮罩 */
+        #orientation-lock {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; color: #fff;
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        @media screen and (orientation: landscape) {
+            #orientation-lock { display: flex; }
+        }
 
         .setup-header { text-align: center; padding: 10px 0; flex-shrink: 0; position: relative; }
         .setup-title { font-size: 1.8rem; font-weight: 900; margin: 0; }
@@ -85,8 +129,8 @@
             color: var(--text-dark);
         }
 
-        .inputs-list { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow: hidden; padding: 5px 0; min-height: 0; }
-        .setup-card { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; align-items: center; gap: 8px; padding: 6px 15px; border-radius: 12px; background: var(--card-white); box-shadow: 0 1px 3px var(--divider-color); flex: 1; min-height: 0; border-left: 8px solid; transition: background-color 0.3s ease; }
+        .inputs-list { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding: 5px 0; min-height: 0; }
+        .setup-card { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; align-items: center; gap: 8px; padding: 6px 15px; border-radius: 12px; background: var(--card-white); box-shadow: 0 1px 3px var(--divider-color); flex-shrink: 0; min-height: 60px; border-left: 8px solid; transition: background-color 0.3s ease; }
         .card-name { font-weight: 900; font-size: 1rem; color: var(--text-dark); }
         .input-group { display: flex; flex-direction: column; align-items: center; gap: 2px; }
         .input-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); }
@@ -128,7 +172,7 @@
         .guide-label { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); }
         .guide-input { border: 2px solid var(--btn-blue-bg); background: var(--input-bg); color: var(--text-dark); font-size: 1.5rem; font-weight: 900; text-align: center; width: 100px; padding: 8px; border-radius: 12px; }
 
-        #resultView { background-color: var(--bg-page); padding: 0; overflow: hidden; }
+        #resultView { background-color: var(--bg-page); padding: 0; }
         .bg-award-watermark { position: absolute; top: 12dvh; left: -10dvw; transform: rotate(-15deg); font-size: 38rem; font-weight: 900; color: rgba(250, 120, 50, 0.05); pointer-events: none; z-index: 0; line-height: 1; white-space: nowrap; }
         .result-container { flex: 1; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 1; max-width: 90dvw; margin: auto; padding: 40px 30px 20px 30px; }
         .result-title-card { background-color: var(--res-title-bg); color: var(--res-title-text); padding: 18px 40px; border-radius: 18px; font-size: 2.5rem; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 25px; box-shadow: 0 5px 0 rgba(255,159,0,0.1); position: relative; white-space: nowrap; }
@@ -147,106 +191,114 @@
 </head>
 <body>
 
-    <div id="setupView" class="view-section active-view">
-        <div class="setup-header">
-            <h1 class="setup-title">設定各階段目標</h1>
-            <div class="total-summary">訓練總時長：<span id="setupTotal" style="font-weight: 900; color: var(--text-dark);">60</span> 分鐘</div>
-            <div id="themeBtn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="切換深淺色模式" title="切換深淺色模式"></div>
-        </div>
-        <div class="inputs-list" id="inputsList"></div>
-        <div class="button-area">
-            <div class="control-group-small">
-                <button class="btn-small" onclick="openGuidedView()" style="color: var(--btn-blue-bg); border-color: var(--btn-blue-bg);">★ 引導設定</button>
-                <button class="btn-small" onclick="exportSettings()">導出設定</button>
-                <button class="btn-small" onclick="document.getElementById('importFile').click()">導入設定</button>
-                <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importSettings(event)">
-            </div>
-            <div class="control-group">
-                <button class="btn-gray" onclick="resetSettings()">恢復預設</button>
-                <button class="btn-finish" onclick="startWorkout()">開始訓練</button>
-            </div>
-        </div>
-        <div style="position: absolute; bottom: 5px; right: 15px; font-size: 0.55rem; font-weight: 800; color: var(--text-muted); opacity: 0.3; pointer-events: none; letter-spacing: 0.5px;">v45.8.9</div>
+    <div id="orientation-lock">
+        <div style="font-size: 3rem; margin-bottom: 20px;">📱</div>
+        <div style="font-weight: 900;">請將螢幕轉回直向</div>
+        <div style="font-size: 0.8rem; color: #888; margin-top: 10px;">本系統僅支援直立模式使用</div>
     </div>
 
-    <div id="guidedView" class="view-section">
-        <div class="setup-header"><h1 class="setup-title">專屬配速生成</h1></div>
-        <div style="flex: 1; overflow-y: auto;">
-            <div class="guide-card">
-                <div class="guide-title">輸入您的生理參數</div>
-                <div class="guide-desc">系統將根據186cm/60分鐘的黃金比例，</br>設計各階段的「理想速度」與「訓練時長」。</div>
-                <div class="guide-input-row">
-                    <span class="guide-label">身高 (公分)</span>
-                    <input type="number" inputmode="numeric" id="guideHeight" class="guide-input" value="170" onclick="this.select()">
+    <div class="view-wrapper">
+        <div id="setupView" class="view-section active-view">
+            <div class="setup-header">
+                <h1 class="setup-title">設定各階段目標</h1>
+                <div class="total-summary">訓練總時長：<span id="setupTotal" style="font-weight: 900; color: var(--text-dark);">60</span> 分鐘</div>
+                <div id="themeBtn" class="theme-toggle-btn" onclick="toggleTheme()"></div>
+            </div>
+            <div class="inputs-list" id="inputsList"></div>
+            <div class="button-area">
+                <div class="control-group-small">
+                    <button class="btn-small" onclick="openGuidedView()" style="color: var(--btn-blue-bg); border-color: var(--btn-blue-bg);">★ 引導設定</button>
+                    <button class="btn-small" onclick="exportSettings()">導出設定</button>
+                    <button class="btn-small" onclick="document.getElementById('importFile').click()">導入設定</button>
+                    <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importSettings(event)">
                 </div>
-                <div class="guide-input-row">
-                    <span class="guide-label">預計運動 (分鐘)</span>
-                    <input type="number" inputmode="numeric" id="guideTime" class="guide-input" value="45" onclick="this.select()">
+                <div class="control-group">
+                    <button class="btn-gray" onclick="resetSettings()">恢復預設</button>
+                    <button class="btn-finish" onclick="startWorkout()">開始訓練</button>
                 </div>
             </div>
+            <div style="position: absolute; bottom: 5px; right: 15px; font-size: 0.55rem; font-weight: 800; color: var(--text-muted); opacity: 0.3; pointer-events: none; letter-spacing: 0.5px;">v45.9.0</div>
         </div>
-        <div class="button-area">
-            <div class="control-group">
-                <button class="btn-gray" onclick="switchView('setupView')">取消返回</button>
-                <button class="btn-finish" onclick="generateGuidedPlan()">產生菜單</button>
-            </div>
-        </div>
-    </div>
 
-    <div id="workoutView" class="view-section">
-        <div class="stage-grid" id="stageGrid"></div>
-        <div class="main-display" id="mainDisplay">
-            <div id="flashLayer" class="flash-pulse"></div>
-            <div id="curStageName" class="stage-title">準備中</div>
-            <div class="timer-text" id="timer" style="z-index: 2;">00:00</div>
-            <div class="info-row" id="infoRow" style="z-index: 2;">
-                <div><span id="inclineLabel"></span>坡度：<span id="incline">--</span>%</div>
-                <div><span id="speedLabel"></span>速度：<span id="speed">--</span> km/h</div>
-                <div class="status-row-wrapper">
-                    <div id="nextStageTimeRow" style="display: none;"><span class="target-label">NEXT</span>時長：<span id="nextDuration">--</span> 分鐘</div>
-                    <div id="totalTimeRow" style="display: none;">實際累積：<span id="totalTime">00:00</span></div>
-                </div>
-            </div>
-        </div>
-        <div class="button-area">
-            <div class="control-group">
-                <button id="sideBtn" class="btn-gray" onclick="handleSideBtn()">回設定</button>
-                <button id="playBtn" class="btn-start" onclick="toggle()">開始運動</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="resultView" class="view-section">
-        <div id="captureArea" style="position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; background-color: var(--bg-page);">
-            <div class="bg-award-watermark">獎</div>
-            <div class="result-container">
-                <div class="result-title-card">- 恭喜訓練完成 -</div>
-                <div class="result-progress-bar" id="resultBarTop"></div>
-                <div class="result-main-text">完成了一場很讚的走路運動！</div>
-                <div class="result-grid">
-                    <div class="stat-card-plane">
-                        <div class="stat-badge" style="background:var(--c2); color:var(--c2-t);">#</div>
-                        <span class="stat-label-plane">累積總時長</span>
-                        <span id="resTotalTime" class="stat-value-plane">00:00</span>
+        <div id="guidedView" class="view-section">
+            <div class="setup-header"><h1 class="setup-title">專屬配速生成</h1></div>
+            <div style="flex: 1; overflow-y: auto;">
+                <div class="guide-card">
+                    <div class="guide-title">輸入您的生理參數</div>
+                    <div class="guide-desc">系統將根據186cm/60分鐘的黃金比例，</br>設計各階段的「理想速度」與「訓練時長」。</div>
+                    <div class="guide-input-row">
+                        <span class="guide-label">身高 (公分)</span>
+                        <input type="number" inputmode="numeric" id="guideHeight" class="guide-input" value="170" onclick="this.select()">
                     </div>
-                    <div class="stat-card-plane">
-                        <div class="stat-badge" style="background:var(--c4); color:var(--c4-t);">★</div>
-                        <span class="stat-label-plane">行走距離(km)</span>
-                        <span id="resDistance" class="stat-value-plane">0.0</span>
+                    <div class="guide-input-row">
+                        <span class="guide-label">預計運動 (分鐘)</span>
+                        <input type="number" inputmode="numeric" id="guideTime" class="guide-input" value="45" onclick="this.select()">
                     </div>
                 </div>
-                <div style="flex: 1; display: flex; align-items: center; width: 100%;">
-                    <div class="result-progress-bar" id="resultBarBottom"></div>
-                </div>
-                <div class="result-footer-cute">
-                    <div class="cute-main">今天也超級棒喔！( *ˊᵕˋ)✩︎‧₊</div>
-                    <div class="cute-sub">記得好好休息，補充水分跟蛋白質</div>
+            </div>
+            <div class="button-area">
+                <div class="control-group">
+                    <button class="btn-gray" onclick="switchView('setupView')">取消返回</button>
+                    <button class="btn-finish" onclick="generateGuidedPlan()">產生菜單</button>
                 </div>
             </div>
         </div>
-        <div class="control-group" id="actionButtons" style="width: 100%; padding: 0 20px 20px 20px; grid-template-columns: 1fr 1fr;">
-            <button class="btn-finish" onclick="location.reload()">返回設定</button>
-            <button class="btn-gray" id="shareBtn" onclick="shareResult()">分享與儲存</button>
+
+        <div id="workoutView" class="view-section">
+            <div class="stage-grid" id="stageGrid"></div>
+            <div class="main-display" id="mainDisplay">
+                <div id="flashLayer" class="flash-pulse"></div>
+                <div id="curStageName" class="stage-title">準備中</div>
+                <div class="timer-text" id="timer" style="z-index: 2;">00:00</div>
+                <div class="info-row" id="infoRow" style="z-index: 2;">
+                    <div><span id="inclineLabel"></span>坡度：<span id="incline">--</span>%</div>
+                    <div><span id="speedLabel"></span>速度：<span id="speed">--</span> km/h</div>
+                    <div class="status-row-wrapper">
+                        <div id="nextStageTimeRow" style="display: none;"><span class="target-label">NEXT</span>時長：<span id="nextDuration">--</span> 分鐘</div>
+                        <div id="totalTimeRow" style="display: none;">實際累積：<span id="totalTime">00:00</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="button-area">
+                <div class="control-group">
+                    <button id="sideBtn" class="btn-gray" onclick="handleSideBtn()">回設定</button>
+                    <button id="playBtn" class="btn-start" onclick="toggle()">開始運動</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultView" class="view-section">
+            <div id="captureArea" style="position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; background-color: var(--bg-page);">
+                <div class="bg-award-watermark">獎</div>
+                <div class="result-container">
+                    <div class="result-title-card">- 恭喜訓練完成 -</div>
+                    <div class="result-progress-bar" id="resultBarTop"></div>
+                    <div class="result-main-text">完成了一場很讚的走路運動！</div>
+                    <div class="result-grid">
+                        <div class="stat-card-plane">
+                            <div class="stat-badge" style="background:var(--c2); color:var(--c2-t);">#</div>
+                            <span class="stat-label-plane">累積總時長</span>
+                            <span id="resTotalTime" class="stat-value-plane">00:00</span>
+                        </div>
+                        <div class="stat-card-plane">
+                            <div class="stat-badge" style="background:var(--c4); color:var(--c4-t);">★</div>
+                            <span class="stat-label-plane">行走距離(km)</span>
+                            <span id="resDistance" class="stat-value-plane">0.0</span>
+                        </div>
+                    </div>
+                    <div style="flex: 1; display: flex; align-items: center; width: 100%;">
+                        <div class="result-progress-bar" id="resultBarBottom"></div>
+                    </div>
+                    <div class="result-footer-cute">
+                        <div class="cute-main">今天也超級棒喔！( *ˊᵕˋ)✩︎‧₊</div>
+                        <div class="cute-sub">記得好好休息，補充水分跟蛋白質</div>
+                    </div>
+                </div>
+            </div>
+            <div class="control-group" id="actionButtons" style="width: 100%; padding: 0 20px 20px 20px; grid-template-columns: 1fr 1fr;">
+                <button class="btn-finish" onclick="location.reload()">返回設定</button>
+                <button class="btn-gray" id="shareBtn" onclick="shareResult()">分享與儲存</button>
+            </div>
         </div>
     </div>
 
@@ -332,7 +384,7 @@
     function switchView(id) {
         document.querySelectorAll('.view-section').forEach(v => {
             v.classList.remove('active-view');
-            setTimeout(() => { if (!v.classList.contains('active-view')) v.style.display = 'none'; }, 400);
+            setTimeout(() => { if (!v.classList.contains('active-view')) v.style.display = 'none'; }, 300);
         });
         const next = document.getElementById(id);
         next.style.display = 'flex';
@@ -468,51 +520,29 @@
     async function exportSettings() {
         let fileName = prompt("請輸入備份檔案名稱：", "Zone2_Backup");
         if (fileName === null) return;
-        if (fileName.trim() === "") fileName = "Zone2_Backup";
-
-        // 讀取當前畫面上的數值，確保導出的檔案是正確的
         const exportData = stages.map((s, i) => ({
             ...s,
             d: parseInt(document.getElementById(`d-${i}`).value) || 0,
             i: document.getElementById(`i-${i}`).value || 0,
             s: parseFloat(document.getElementById(`s-${i}`).value) || 0
         }));
-
         const blob = new Blob([JSON.stringify(exportData)], { type: "application/json" });
         const file = new File([blob], `${fileName}.json`, { type: "application/json" });
-
-        // 檢查是否支援分享功能 (行動裝置)
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            try {
-                await navigator.share({
-                    files: [file],
-                    title: 'Zone2 設定導出',
-                    text: '這是我的 Zone2 訓練設定檔'
-                });
-            } catch (err) {
-                if (err.name !== 'AbortError') downloadFallbackFile(blob, `${fileName}.json`);
-            }
-        } else {
-            // 不支援分享則走一般下載
-            downloadFallbackFile(blob, `${fileName}.json`);
-        }
+            try { await navigator.share({ files: [file], title: 'Zone2 設定導出' }); } catch (err) { if (err.name !== 'AbortError') downloadFallbackFile(blob, `${fileName}.json`); }
+        } else { downloadFallbackFile(blob, `${fileName}.json`); }
     }
 
     function downloadFallbackFile(blob, name) {
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = name;
-        a.click();
+        a.href = URL.createObjectURL(blob); a.download = name; a.click();
     }
 
     function importSettings(e) {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = (ev) => { 
-            try {
-                stages = JSON.parse(ev.target.result); 
-                renderSetupList(); 
-            } catch(e) { alert("無效的檔案格式"); }
+            try { stages = JSON.parse(ev.target.result); renderSetupList(); } catch(e) { alert("無效的檔案格式"); }
         };
         reader.readAsText(file);
     }
@@ -524,31 +554,15 @@
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], "Zone2_Result.png", { type: "image/png" });
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: 'Zone2 訓練成果',
-                            text: '看看我的訓練成果！'
-                        });
-                    } catch (shareErr) {
-                        if (shareErr.name !== 'AbortError') {
-                            downloadFallback(blob);
-                        }
-                    }
-                } else {
-                    downloadFallback(blob);
-                }
+                    try { await navigator.share({ files: [file], title: 'Zone2 訓練成果' }); } catch (shareErr) { if (shareErr.name !== 'AbortError') downloadFallback(blob); }
+                } else { downloadFallback(blob); }
             });
-        } catch (e) {
-            alert("截圖失敗");
-        }
+        } catch (e) { alert("截圖失敗"); }
     }
 
     function downloadFallback(blob) {
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = "Zone2_Result.png";
-        a.click();
+        a.href = URL.createObjectURL(blob); a.download = "Zone2_Result.png"; a.click();
     }
 
     function initSetup() {
@@ -558,13 +572,10 @@
         const saved = localStorage.getItem(STORAGE_KEY);
         stages = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(originalStages));
         renderSetupList();
-        setTimeout(() => { document.body.style.display = 'none'; void document.body.offsetHeight; document.body.style.display = 'flex'; }, 10);
     }
 
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
-        let refreshing = false;
-        navigator.serviceWorker.addEventListener('controllerchange', () => { if (!refreshing) { refreshing = true; window.location.reload(); } });
     }
     initSetup();
 </script>
