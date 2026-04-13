@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 v44</title>
+    <title>Zone2 訓練儀表板 v45</title>
     <style>
         :root {
             --bg-page: #f5f5f7;
@@ -108,7 +108,7 @@
         .btn-gray { background: var(--input-bg); color: var(--text-dark); border: 1px solid var(--input-border); }
         .btn-red { background: #ff3b30 !important; color: #fff !important; }
         
-        /* 輔助型小按鈕 (導出/導入專用) */
+        /* 輔助型小按鈕 (導出/導入/引導專用) */
         .btn-small { 
             padding: 0; 
             font-size: 0.85rem; 
@@ -123,7 +123,18 @@
 
         .control-group { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; width: 100%; }
         .control-group button { font-size: 1.15rem; }
-        .control-group-small { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-bottom: 12px; }
+        
+        /* 修改為 3 欄 */
+        .control-group-small { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; width: 100%; margin-bottom: 12px; }
+
+        /* --- 新增：引導設定畫面的專屬樣式 --- */
+        .guide-card { background: var(--card-white); border-radius: 20px; padding: 25px 20px; margin-top: 20px; box-shadow: 0 4px 15px var(--divider-color); }
+        .guide-title { font-size: 1.4rem; font-weight: 900; color: var(--text-dark); margin-bottom: 15px; text-align: center; }
+        .guide-desc { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); margin-bottom: 25px; text-align: center; line-height: 1.5; }
+        .guide-input-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed var(--input-border); }
+        .guide-input-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .guide-label { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); }
+        .guide-input { border: 2px solid var(--btn-blue-bg); background: var(--input-bg); color: var(--text-dark); font-size: 1.5rem; font-weight: 900; text-align: center; width: 100px; padding: 8px; border-radius: 12px; }
 
         /* --- 結算畫面 --- */
         #resultView { background-color: var(--bg-page); padding: 0; overflow: hidden; }
@@ -210,8 +221,9 @@
         <div class="inputs-list" id="inputsList"></div>
         <div class="button-area">
             <div class="control-group-small">
-                <button class="btn-small" onclick="exportSettings()">導出設定檔</button>
-                <button class="btn-small" onclick="document.getElementById('importFile').click()">導入設定檔</button>
+                <button class="btn-small" onclick="openGuidedView()" style="color: var(--btn-blue-bg); border-color: var(--btn-blue-bg);">✨ 智能引導</button>
+                <button class="btn-small" onclick="exportSettings()">導出設定</button>
+                <button class="btn-small" onclick="document.getElementById('importFile').click()">導入設定</button>
                 <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importSettings(event)">
             </div>
             
@@ -222,6 +234,35 @@
         </div>
     </div>
 
+    <div id="guidedView" class="view-section">
+        <div class="setup-header">
+            <h1 class="setup-title">專屬配速生成</h1>
+        </div>
+        
+        <div style="flex: 1; overflow-y: auto;">
+            <div class="guide-card">
+                <div class="guide-title">輸入您的生理參數</div>
+                <div class="guide-desc">系統將根據 186cm / 60分鐘 的黃金比例，為您重新計算所有階段的「理想速度」與「訓練時長」。</div>
+                
+                <div class="guide-input-row">
+                    <span class="guide-label">身高 (公分)</span>
+                    <input type="number" inputmode="numeric" id="guideHeight" class="guide-input" value="170" onclick="this.select()">
+                </div>
+                
+                <div class="guide-input-row">
+                    <span class="guide-label">預計運動 (分鐘)</span>
+                    <input type="number" inputmode="numeric" id="guideTime" class="guide-input" value="45" onclick="this.select()">
+                </div>
+            </div>
+        </div>
+
+        <div class="button-area">
+            <div class="control-group">
+                <button class="btn-gray" onclick="switchView('setupView')">取消返回</button>
+                <button class="btn-finish" onclick="generateGuidedPlan()">產生菜單</button>
+            </div>
+        </div>
+    </div>
     <div id="workoutView" class="view-section">
         <div class="stage-grid" id="stageGrid"></div>
         <div class="main-display" id="mainDisplay">
@@ -444,9 +485,26 @@
         }
     }
 
-    // --- 檔案導出功能 (已修正為強制二進位下載) ---
+    // --- 檔案導出功能 (新增自訂檔名) ---
     function exportSettings() {
-        // 即時抓取畫面上當前的輸入值
+        // 1. 產生預設檔名帶上今天的日期
+        const dateStr = new Date().toISOString().split('T')[0];
+        const defaultName = `Zone2_訓練設定_${dateStr}`;
+        
+        // 2. 彈出視窗讓使用者輸入檔名
+        let fileName = prompt("請輸入要儲存的設定檔名稱：", defaultName);
+        
+        // 3. 如果使用者點擊「取消」或輸入空值，則終止導出
+        if (fileName === null || fileName.trim() === "") {
+            return; 
+        }
+        
+        // 4. 如果使用者沒有輸入 .json 副檔名，自動幫他補上
+        if (!fileName.endsWith('.json')) {
+            fileName += '.json';
+        }
+
+        // 擷取當前畫面上的設定值
         const currentStages = stages.map((s, i) => {
             const d = parseInt(document.getElementById(`d-${i}`).value) || 1;
             const inc = document.getElementById(`i-${i}`).value || 0;
@@ -456,15 +514,13 @@
 
         const dataStr = JSON.stringify(currentStages, null, 2);
         
-        // 使用 application/octet-stream 強制瀏覽器觸發下載行為，避免在新分頁開啟文字
         const blob = new Blob([dataStr], { type: "application/octet-stream" });
         const url = URL.createObjectURL(blob);
         
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        const dateStr = new Date().toISOString().split('T')[0];
-        a.download = `Zone2_Settings_${dateStr}.json`;
+        a.download = fileName; // 套用使用者自訂的檔名
         
         document.body.appendChild(a);
         a.click();
@@ -485,7 +541,6 @@
             try {
                 const importedData = JSON.parse(e.target.result);
                 
-                // 簡單驗證檔案格式
                 if (Array.isArray(importedData) && importedData.length === stages.length) {
                     stages = importedData;
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(stages));
@@ -703,6 +758,77 @@
             btnArea.style.display = 'grid';
             shareBtn.innerText = originalText;
         }
+    }
+
+    // --- 智能引導演算邏輯 ---
+    // 以 186cm, 60分鐘為基礎黃金範本
+    const baseTemplate = [
+        { n: "暖身", d: 8,  i: 3,  s: 5.0, bg: "var(--c1)" },
+        { n: "預熱", d: 7,  i: 8,  s: 5.5, bg: "var(--c2)" },
+        { n: "挑戰", d: 15, i: 12, s: 5.0, bg: "var(--c3)" },
+        { n: "魔王", d: 12, i: 15, s: 4.5, bg: "var(--c4)" },
+        { n: "高位", d: 13, i: 9,  s: 5.5, bg: "var(--c5)" },
+        { n: "緩和", d: 5,  i: 0,  s: 5.0, bg: "var(--c6)" }
+    ];
+
+    function openGuidedView() {
+        switchView('guidedView');
+    }
+
+    function generateGuidedPlan() {
+        const targetHeight = parseInt(document.getElementById('guideHeight').value);
+        const targetTime = parseInt(document.getElementById('guideTime').value);
+
+        if (!targetHeight || targetHeight < 100 || targetHeight > 250) {
+            alert("請輸入有效的身高 (100 - 250 cm)");
+            return;
+        }
+        if (!targetTime || targetTime < 10 || targetTime > 180) {
+            alert("請輸入有效的時間 (10 - 180 分鐘)");
+            return;
+        }
+
+        let accumulatedTime = 0;
+        let newStages = [];
+
+        baseTemplate.forEach((base, index) => {
+            // 1. 計算時間：等比例縮放 (四捨五入)
+            let newD = Math.round((targetTime / 60) * base.d);
+
+            // 確保最後一個階段 (緩和) 吸收所有小數點進位誤差，讓總時間完美等於使用者輸入
+            if (index === baseTemplate.length - 1) {
+                newD = targetTime - accumulatedTime;
+                if (newD < 1) newD = 1; // 確保至少有1分鐘緩和
+            } else {
+                accumulatedTime += newD;
+            }
+
+            // 2. 計算速度：依腿長(身高)比例縮放，四捨五入至小數點第一位
+            let newS = (targetHeight / 186) * base.s;
+            newS = Math.round(newS * 10) / 10;
+
+            // 3. 坡度保持黃金比例不變
+            newStages.push({
+                n: base.n,
+                d: newD,
+                i: base.i,
+                s: newS,
+                bg: base.bg
+            });
+        });
+
+        // 將計算結果寫入全域變數並儲存
+        stages = newStages;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stages));
+        
+        // 重新渲染主畫面的列表，並切換回主畫面
+        renderSetupList();
+        switchView('setupView');
+        
+        // 給予微小延遲讓畫面切換完畢再跳通知
+        setTimeout(() => {
+            alert(`已成功為您生成專屬菜單！\n身高：${targetHeight}cm / 總時間：${targetTime}分\n您可以直接開始運動，或導出保存此設定。`);
+        }, 300);
     }
 
     initSetup();
