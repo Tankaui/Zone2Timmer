@@ -221,7 +221,7 @@
         <div class="inputs-list" id="inputsList"></div>
         <div class="button-area">
             <div class="control-group-small">
-                <button class="btn-small" onclick="openGuidedView()" style="color: var(--btn-blue-bg); border-color: var(--btn-blue-bg);">✨ 智能引導</button>
+                <button class="btn-small" onclick="openGuidedView()" style="color: var(--btn-blue-bg); border-color: var(--btn-blue-bg);">★ 引導設定</button>
                 <button class="btn-small" onclick="exportSettings()">導出設定</button>
                 <button class="btn-small" onclick="document.getElementById('importFile').click()">導入設定</button>
                 <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importSettings(event)">
@@ -760,7 +760,7 @@
         }
     }
 
-    // --- 智能引導演算邏輯 ---
+    // --- 引導設定演算邏輯 ---
     // 以 186cm, 60分鐘為基礎黃金範本
     const baseTemplate = [
         { n: "暖身", d: 8,  i: 3,  s: 5.0, bg: "var(--c1)" },
