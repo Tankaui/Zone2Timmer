@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 v45.3</title>
+    <title>Zone2 訓練儀表板 v45.4</title>
     <style>
         :root {
             --bg-page: #f5f5f7;
@@ -87,11 +87,22 @@
         .stage-box { padding: 12px 2px; border-radius: 10px; text-align: center; font-weight: 900; font-size: 0.8rem; color: var(--text-muted); background: var(--card-white); cursor: pointer; transition: 0.3s; }
         .stage-box.active { background: var(--text-dark) !important; color: var(--bg-page) !important; }
         
-        .main-display { flex: 1; margin: 10px 0; border-radius: 28px; display: flex; flex-direction: column; justify-content: center; padding: 30px; background-color: var(--card-white); position: relative; overflow: hidden; transition: background-color 0.8s ease; }
+        .main-display { flex: 1; margin: 10px 0; border-radius: 28px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; background-color: var(--card-white); position: relative; overflow: hidden; transition: background-color 0.8s ease; }
         
-        .timer-text { font-size: 7rem; font-weight: 900; line-height: 1; margin: 10px 0; tabular-nums; letter-spacing: 0; text-align: center; width: 100%; }
+        /* 修正 iOS 置中問題：改用 block，margin 設定為 auto，並確保寬度佔滿 */
+        .timer-text { 
+            display: block;
+            width: 100%;
+            font-size: 7rem; 
+            font-weight: 900; 
+            line-height: 1; 
+            margin: 10px auto; 
+            tabular-nums; 
+            letter-spacing: 0; 
+            text-align: center; 
+        }
         
-        .info-row { font-size: 1.4rem; font-weight: 900; line-height: 1.8; z-index: 2; }
+        .info-row { width: 100%; font-size: 1.4rem; font-weight: 900; line-height: 1.8; z-index: 2; text-align: left; padding-left: 10%; }
         .target-label { font-size: 0.7rem; vertical-align: middle; color: var(--bg-page); background: var(--text-dark); padding: 2px 6px; border-radius: 4px; margin-right: 6px; font-weight: 800; }
 
         @keyframes soft-pulse { 0% { background-color: transparent; } 50% { background-color: var(--flash-red); } 100% { background-color: transparent; } }
@@ -207,11 +218,8 @@
             <div class="bg-award-watermark">獎</div>
             <div class="result-container">
                 <div class="result-title-card">- 恭喜訓練完成 -</div>
-                
                 <div class="result-progress-bar" id="resultBarTop"></div>
-
                 <div class="result-main-text">完成了一場很讚的走路運動！</div>
-                
                 <div class="result-grid">
                     <div class="stat-card-plane">
                         <div class="stat-badge" style="background:var(--c2); color:var(--c2-t);">#</div>
@@ -224,11 +232,9 @@
                         <span id="resDistance" class="stat-value-plane">0.0</span>
                     </div>
                 </div>
-                
                 <div style="flex: 1; display: flex; align-items: center; width: 100%;">
                     <div class="result-progress-bar" id="resultBarBottom"></div>
                 </div>
-
                 <div class="result-footer-cute">
                     <div class="cute-main">今天也超級棒喔！( *ˊᵕˋ)✩︎‧₊</div>
                     <div class="cute-sub">記得好好休息，補充水分跟蛋白質</div>
@@ -420,19 +426,13 @@
         document.getElementById('resTotalTime').innerText = fmt(total);
         let dist = 0; stageTimeTracker.forEach((t, i) => dist += (t/3600)*stages[i].s);
         document.getElementById('resDistance').innerText = dist.toFixed(1);
-
-        // 重新渲染結算畫面的色條 (頂部與底部)
         const barTop = document.getElementById('resultBarTop');
         const barBottom = document.getElementById('resultBarBottom');
-        barTop.innerHTML = '';
-        barBottom.innerHTML = '';
-        
+        barTop.innerHTML = ''; barBottom.innerHTML = '';
         stages.forEach(s => {
             const dot = `<div class="prog-dot" style="background:${s.bg}"></div>`;
-            barTop.innerHTML += dot;
-            barBottom.innerHTML += dot;
+            barTop.innerHTML += dot; barBottom.innerHTML += dot;
         });
-
         switchView('resultView');
     }
 
