@@ -193,6 +193,12 @@
         </div>
         <div class="inputs-list" id="inputsList"></div>
         <div class="button-area">
+            <div class="control-group" style="grid-template-columns: 1fr 1fr; margin-bottom: 10px;">
+                <button class="btn-gray" onclick="exportSettings()">導出檔案</button>
+                <button class="btn-gray" onclick="document.getElementById('importFile').click()">導入檔案</button>
+                <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importSettings(event)">
+            </div>
+            
             <div class="control-group">
                 <button class="btn-gray" onclick="resetSettings()">恢復預設</button>
                 <button class="btn-finish" onclick="startWorkout()">開始訓練</button>
@@ -420,6 +426,66 @@
             stages = JSON.parse(JSON.stringify(originalStages));
             renderSetupList();
         }
+    }
+
+    // --- 檔案導出功能 ---
+    function exportSettings() {
+        // 即時抓取畫面上當前的輸入值，以免使用者修改後還沒開始訓練就導出
+        const currentStages = stages.map((s, i) => {
+            const d = parseInt(document.getElementById(`d-${i}`).value) || 1;
+            const inc = document.getElementById(`i-${i}`).value || 0;
+            const spd = parseFloat(document.getElementById(`s-${i}`).value) || 5;
+            return { ...s, d: d, i: inc, s: spd };
+        });
+
+        // 轉換為 JSON 字串
+        const dataStr = JSON.stringify(currentStages, null, 2);
+        
+        // 建立 Blob 實體檔案
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        // 建立隱藏的 a 標籤來觸發下載
+        const a = document.createElement('a');
+        a.href = url;
+        const dateStr = new Date().toISOString().split('T')[0];
+        a.download = `Zone2_Settings_${dateStr}.json`;
+        
+        document.body.appendChild(a);
+        a.click();
+        
+        // 清理記憶體
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // --- 檔案導入功能 ---
+    function importSettings(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                // 簡單驗證檔案格式 (確認是陣列且長度與當前階段數相同)
+                if (Array.isArray(importedData) && importedData.length === stages.length) {
+                    stages = importedData;
+                    // 同步寫入 localStorage 以免重整遺失
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(stages));
+                    renderSetupList();
+                    alert("設定檔導入成功！");
+                } else {
+                    alert("設定檔格式錯誤或與當前階段數不符！");
+                }
+            } catch (error) {
+                alert("讀取檔案失敗或格式不正確，請確認上傳的為 JSON 檔！");
+            }
+            // 重置 file input 的值，這樣連續導入同一個檔案才會觸發 onchange
+            event.target.value = '';
+        };
+        reader.readAsText(file);
     }
 
     function calcTotal() {
