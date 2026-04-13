@@ -246,8 +246,8 @@
                     </div>
                     <div class="stat-card-plane">
                         <div class="stat-badge" style="background:var(--c4); color:var(--c4-t);">★</div>
-                        <span class="stat-label-plane">行走距離</span>
-                        <span id="resDistance" class="stat-value-plane" style="font-size: 2.2rem;">0.00 km</span>
+                        <span class="stat-label-plane">行走距離(km)</span>
+                        <span id="resDistance" class="stat-value-plane">0.0</span>
                     </div>
                 </div>
                 
@@ -555,7 +555,7 @@
         stageTimeTracker.forEach((timeInSec, i) => {
             calcDistance += (timeInSec / 3600) * stages[i].s;
         });
-        document.getElementById('resDistance').innerText = calcDistance.toFixed(2) + " km";
+        document.getElementById('resDistance').innerText = calcDistance.toFixed(1);
 
         switchView('resultView');
     }
@@ -592,7 +592,7 @@
                     try {
                         await navigator.share({
                             title: 'Zone2 訓練完成',
-                            text: `Zone2訓練達成！總時間：${fmt(total)}，總行走距離：${distanceStr}。`,
+                            text: `Zone2訓練達成！總時間：${fmt(total)}，總行走距離：${distanceStr} km。`,
                             files: [file]
                         });
                     } catch (err) {
