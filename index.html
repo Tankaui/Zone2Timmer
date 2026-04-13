@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 v45.8</title>
+    <title>Zone2 訓練儀表板 v45.8.1</title>
     <style>
         :root {
             --bg-page: #f5f5f7;
@@ -442,16 +442,16 @@
         document.getElementById('speed').innerText = s.s;
     }
 
-    // 將原本的 tick 抽離，只負責單次推進邏輯
-    function tickLogic() {
+    // 將原本的 tick 抽離，加入 isCatchingUp 靜默補時機制
+    function tickLogic(isCatchingUp = false) {
         if (isPrep) {
             prepSec--;
-            if (prepSec <= 3 && prepSec > 0) playBeep(800, 0.1);
-            if (prepSec <= 0) { isPrep = false; playBeep(1200, 0.4); }
+            if (!isCatchingUp && prepSec <= 3 && prepSec > 0) playBeep(800, 0.1);
+            if (prepSec <= 0) { isPrep = false; if (!isCatchingUp) playBeep(1200, 0.4); }
         } else {
             sec++; total++; stageTimeTracker[idx]++;
             const rem = (stages[idx].d * 60) - sec;
-            if (rem === 30 || (rem <= 5 && rem > 0)) { playBeep(rem === 30 ? 600 : 1000, 0.1); softFlash(); }
+            if (!isCatchingUp && (rem === 30 || (rem <= 5 && rem > 0))) { playBeep(rem === 30 ? 600 : 1000, 0.1); softFlash(); }
             
             if (sec >= stages[idx].d * 60) {
                 idx++;
@@ -465,7 +465,7 @@
                 }
             }
         }
-        updateUI();
+        if (!isCatchingUp) updateUI();
     }
 
     function toggle() {
@@ -480,16 +480,19 @@
             side.innerText = "回設定"; side.classList.remove('btn-red');
             
             referenceTime = Date.now();
-            // 改為高頻率偵測，徹底解決 setInterval 時間流失誤差
+            // 改為高頻率偵測，徹底解決 setInterval 時間流失誤差，並引入靜默補時
             timerInterval = setInterval(() => {
                 let now = Date.now();
                 let elapsed = now - referenceTime;
                 if (elapsed >= 1000) {
                     let ticksToFire = Math.floor(elapsed / 1000);
                     referenceTime += ticksToFire * 1000;
-                    // 一次性補足流失的秒數（防休眠）
+                    
                     for (let i = 0; i < ticksToFire; i++) {
-                        tickLogic();
+                        // 判斷是否為迴圈的最後一次
+                        let isLastTick = (i === ticksToFire - 1);
+                        // 只有最後一次 tick 才允許發聲與更新畫面，前面全部靜默計算
+                        tickLogic(!isLastTick); 
                     }
                 }
             }, 200);
