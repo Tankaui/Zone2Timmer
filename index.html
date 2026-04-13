@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 v45.9.0</title>
+    <title>Zone2 訓練儀表板 v45.9.1</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -60,7 +60,7 @@
             margin: 0; padding: 0; 
             height: 100dvh; width: 100vw; 
             overflow: hidden;
-            position: fixed; /* 防止橡皮筋效應導致的位移 */
+            position: fixed; 
         }
 
         body { 
@@ -70,9 +70,10 @@
             overscroll-behavior: none;
             -webkit-text-size-adjust: 100%;
             transition: background-color 0.3s ease, color 0.3s ease;
+            /* 修正標題重疊系統資訊列的問題 */
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
-        /* 視圖切換容器，防止抖動核心 */
         .view-wrapper {
             position: relative;
             flex: 1;
@@ -100,7 +101,6 @@
             z-index: 2;
         }
 
-        /* 橫式鎖定遮罩 */
         #orientation-lock {
             display: none;
             position: fixed;
@@ -217,7 +217,7 @@
                     <button class="btn-finish" onclick="startWorkout()">開始訓練</button>
                 </div>
             </div>
-            <div style="position: absolute; bottom: 5px; right: 15px; font-size: 0.55rem; font-weight: 800; color: var(--text-muted); opacity: 0.3; pointer-events: none; letter-spacing: 0.5px;">v45.9.0</div>
+            <div style="position: absolute; bottom: 5px; right: 15px; font-size: 0.55rem; font-weight: 800; color: var(--text-muted); opacity: 0.3; pointer-events: none; letter-spacing: 0.5px;">v45.9.1</div>
         </div>
 
         <div id="guidedView" class="view-section">
