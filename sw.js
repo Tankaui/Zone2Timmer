@@ -1,5 +1,5 @@
 // 每次有修改 index.html，這裡的版號就一定要跟著改
-const CACHE_NAME = 'zone2-cache-v45.8.3'; 
+const CACHE_NAME = 'zone2-cache-v45.8.4'; 
 const urlsToCache = [
   './',
   './index.html',
