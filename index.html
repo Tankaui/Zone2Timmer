@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 v45.9.1</title>
+    <title>Zone2 訓練儀表板 v45.9.2</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -70,7 +70,6 @@
             overscroll-behavior: none;
             -webkit-text-size-adjust: 100%;
             transition: background-color 0.3s ease, color 0.3s ease;
-            /* 修正標題重疊系統資訊列的問題 */
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
@@ -172,6 +171,9 @@
         .guide-label { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); }
         .guide-input { border: 2px solid var(--btn-blue-bg); background: var(--input-bg); color: var(--text-dark); font-size: 1.5rem; font-weight: 900; text-align: center; width: 100px; padding: 8px; border-radius: 12px; }
 
+        .level-box { padding: 10px 0; border-radius: 10px; text-align: center; font-weight: 900; font-size: 1rem; color: var(--text-dark); background: var(--input-bg); border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
+        .level-box.active { background: var(--c1); color: var(--btn-blue-bg); border-color: var(--btn-blue-bg); }
+
         #resultView { background-color: var(--bg-page); padding: 0; }
         .bg-award-watermark { position: absolute; top: 12dvh; left: -10dvw; transform: rotate(-15deg); font-size: 38rem; font-weight: 900; color: rgba(250, 120, 50, 0.05); pointer-events: none; z-index: 0; line-height: 1; white-space: nowrap; }
         .result-container { flex: 1; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 1; max-width: 90dvw; margin: auto; padding: 40px 30px 20px 30px; }
@@ -217,22 +219,35 @@
                     <button class="btn-finish" onclick="startWorkout()">開始訓練</button>
                 </div>
             </div>
-            <div style="position: absolute; bottom: 5px; right: 15px; font-size: 0.55rem; font-weight: 800; color: var(--text-muted); opacity: 0.3; pointer-events: none; letter-spacing: 0.5px;">v45.9.1</div>
+            <div style="position: absolute; bottom: 5px; right: 15px; font-size: 0.55rem; font-weight: 800; color: var(--text-muted); opacity: 0.3; pointer-events: none; letter-spacing: 0.5px;">v45.9.2</div>
         </div>
 
         <div id="guidedView" class="view-section">
             <div class="setup-header"><h1 class="setup-title">專屬配速生成</h1></div>
             <div style="flex: 1; overflow-y: auto;">
                 <div class="guide-card">
-                    <div class="guide-title">輸入您的生理參數</div>
-                    <div class="guide-desc">系統將根據186cm/60分鐘的黃金比例，</br>設計各階段的「理想速度」與「訓練時長」。</div>
-                    <div class="guide-input-row">
+                    <div class="guide-title">輸入生理與強度參數</div>
+                    <div class="guide-desc">系統將根據 **185cm / 60分鐘** 的基準公式，</br>精準配置各階段的「理想速度」與「訓練時長」。</div>
+                    
+                    <div class="guide-input-row" style="flex-direction: column; align-items: flex-start; border-bottom: none; padding-bottom: 0;">
+                        <span class="guide-label" style="margin-bottom: 12px; width: 100%; text-align: center;">選擇訓練強度</span>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%;">
+                            <div class="level-box active" onclick="selectLevel('challenge')" id="lvl-challenge">挑戰</div>
+                            <div class="level-box" onclick="selectLevel('advanced')" id="lvl-advanced">進階</div>
+                            <div class="level-box" onclick="selectLevel('beginner')" id="lvl-beginner">入門</div>
+                        </div>
+                        <div id="levelDesc" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 15px; margin-bottom: 15px; font-weight: 700; text-align: justify; line-height: 1.5; min-height: 3rem;">
+                            針對有重訓習慣、心肺耐受度極高者。最高 15% 坡度將帶來極限燃脂效果，請隨時注意關節感受。
+                        </div>
+                    </div>
+                    
+                    <div class="guide-input-row" style="border-top: 1px dashed var(--input-border); padding-top: 15px;">
                         <span class="guide-label">身高 (公分)</span>
-                        <input type="number" inputmode="numeric" id="guideHeight" class="guide-input" value="170" onclick="this.select()">
+                        <input type="number" inputmode="numeric" id="guideHeight" class="guide-input" value="185" onclick="this.select()">
                     </div>
                     <div class="guide-input-row">
                         <span class="guide-label">預計運動 (分鐘)</span>
-                        <input type="number" inputmode="numeric" id="guideTime" class="guide-input" value="45" onclick="this.select()">
+                        <input type="number" inputmode="numeric" id="guideTime" class="guide-input" value="60" onclick="this.select()">
                     </div>
                 </div>
             </div>
@@ -312,6 +327,34 @@
         { n: "高位", d: 13, i: 9, s: 5.5, bg: "var(--c5)" },
         { n: "緩和", d: 5, i: 0, s: 5, bg: "var(--c6)" }
     ];
+
+    let currentLevel = 'challenge';
+    const levelData = {
+        'challenge': {
+            desc: '針對有重訓習慣、心肺耐受度極高者。最高 15% 坡度將帶來極限燃脂效果，請隨時注意關節感受。',
+            base: [
+                { n: "暖身", d: 8, i: 3, s: 5.0 }, { n: "預熱", d: 7, i: 8, s: 5.5 },
+                { n: "挑戰", d: 15, i: 12, s: 5.0 }, { n: "魔王", d: 12, i: 15, s: 4.5 },
+                { n: "高位", d: 13, i: 9, s: 5.5 }, { n: "緩和", d: 5, i: 0, s: 5.0 }
+            ]
+        },
+        'advanced': {
+            desc: '適合平時有運動習慣者。保留爬坡阻力，但將最高坡度壓在 10%，有效避免代償與過度疲勞。',
+            base: [
+                { n: "暖身", d: 8, i: 2, s: 5.0 }, { n: "預熱", d: 7, i: 5, s: 5.2 },
+                { n: "挑戰", d: 15, i: 8, s: 5.0 }, { n: "魔王", d: 12, i: 10, s: 4.5 },
+                { n: "高位", d: 13, i: 6, s: 5.2 }, { n: "緩和", d: 5, i: 0, s: 4.5 }
+            ]
+        },
+        'beginner': {
+            desc: '安全第一，保護膝關節。適合無運動習慣或新手，重點在於維持運動心率並走完全程，嚴禁抓扶手。',
+            base: [
+                { n: "暖身", d: 8, i: 0, s: 4.5 }, { n: "預熱", d: 7, i: 3, s: 4.8 },
+                { n: "挑戰", d: 15, i: 5, s: 4.5 }, { n: "魔王", d: 12, i: 6, s: 4.0 },
+                { n: "高位", d: 13, i: 4, s: 4.8 }, { n: "緩和", d: 5, i: 0, s: 4.0 }
+            ]
+        }
+    };
 
     const STORAGE_KEY = 'zone2_stages_v45';
     const THEME_KEY = 'zone2_theme_pref';
@@ -505,16 +548,33 @@
     function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
     function softFlash() { const l = document.getElementById('flashLayer'); l.classList.remove('pulse-active'); void l.offsetWidth; l.classList.add('pulse-active'); }
     function openGuidedView() { switchView('guidedView'); }
+
+    function selectLevel(lvl) {
+        currentLevel = lvl;
+        document.querySelectorAll('.level-box').forEach(b => b.classList.remove('active'));
+        document.getElementById(`lvl-${lvl}`).classList.add('active');
+        document.getElementById('levelDesc').innerText = levelData[lvl].desc;
+    }
+
     function generateGuidedPlan() {
         const h = parseInt(document.getElementById('guideHeight').value);
         const t = parseInt(document.getElementById('guideTime').value);
         let acc = 0;
-        stages = originalStages.map((b, i) => {
+        
+        const selectedBase = levelData[currentLevel].base;
+        const bgColors = ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)", "var(--c6)"];
+        
+        stages = selectedBase.map((b, i) => {
             let d = Math.round((t/60)*b.d);
             if (i === 5) d = t - acc; else acc += d;
-            return { ...b, d: Math.max(0, d), s: Math.round((h/186)*b.s*10)/10 };
+            
+            let adjustedSpeed = Math.round((h/185)*b.s*10)/10;
+            
+            return { ...b, d: Math.max(0, d), s: adjustedSpeed, bg: bgColors[i] };
         });
-        renderSetupList(); switchView('setupView');
+        
+        renderSetupList(); 
+        switchView('setupView');
     }
 
     async function exportSettings() {
@@ -546,6 +606,7 @@
         };
         reader.readAsText(file);
     }
+    
     function resetSettings() { if (confirm("確定重置？")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
 
     async function shareResult() {
