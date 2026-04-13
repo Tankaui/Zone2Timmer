@@ -1,5 +1,5 @@
-// 1. 每次有修改 index.html，這裡的版號就一定要跟著改（例如改成 v45.8.3）
-const CACHE_NAME = 'zone2-cache-v45.8.2'; 
+// 每次有修改 index.html，這裡的版號就一定要跟著改
+const CACHE_NAME = 'zone2-cache-v45.8.3'; 
 const urlsToCache = [
   './',
   './index.html',
@@ -9,7 +9,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  // 2. 強制新的 Service Worker 立刻安裝，不要等待舊的頁面關閉
+  // 強制新的 Service Worker 立刻安裝，不要等待舊的頁面關閉
   self.skipWaiting(); 
   
   event.waitUntil(
@@ -18,7 +18,7 @@ self.addEventListener('install', event => {
   );
 });
 
-// 3. 新增 activate 事件：這是用來清理垃圾的關鍵
+// 新增 activate 事件：這是用來清理垃圾的關鍵
 self.addEventListener('activate', event => {
   event.waitUntil(
     // 讓新的 Service Worker 立刻取得頁面的控制權
