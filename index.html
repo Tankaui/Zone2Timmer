@@ -22,12 +22,36 @@
             --flash-red: rgba(255, 59, 48, 0.2);
             --res-title-bg: #fffac2;
             --res-title-text: #ff9f00;
+            --input-bg: #f5f5f7;
+            --input-border: #d2d2d7;
+            --divider-color: rgba(0,0,0,0.03);
+        }
+
+        /* 手動切換的深色模式變數 */
+        body.dark-theme {
+            --bg-page: #000000;
+            --card-white: #1c1c1e;
+            --text-dark: #f5f5f7;
+            --text-muted: #a1a1a6;
+            --btn-blue-bg: #0a84ff;
+            --prep-bg: #2c2c2e;
+            --res-title-bg: #332b00;
+            --res-title-text: #ffd60a;
+            --input-bg: #2c2c2e;
+            --input-border: #3a3a3c;
+            --divider-color: rgba(255,255,255,0.05);
+            
+            --c1: #003366; --c1-t: #66b3ff;
+            --c2: #004d33; --c2-t: #33cc99;
+            --c3: #1a4d1a; --c3-t: #66ff66;
+            --c4: #663300; --c4-t: #ffcc66;
+            --c5: #660033; --c5-t: #ff6699;
+            --c6: #2c2c2e; --c6-t: #f5f5f7;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         
         body { 
-            /* 恢復原本的系統預設字體 */
             font-family: -apple-system, "Noto Sans TC", sans-serif; 
             background-color: var(--bg-page); color: var(--text-dark); 
             margin: 0; height: 100dvh; width: 100vw; overflow: hidden; 
@@ -35,31 +59,41 @@
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
             overscroll-behavior-y: none;
             -webkit-text-size-adjust: 100%;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .view-section { display: none; flex-direction: column; height: 100%; padding: 10px 20px; opacity: 0; transition: opacity 0.4s ease-in-out; position: relative; }
         .view-section.active-view { display: flex; opacity: 1; }
 
         /* --- 設定畫面 --- */
-        .setup-header { text-align: center; padding: 15px 0; flex-shrink: 0; }
+        .setup-header { text-align: center; padding: 15px 0; flex-shrink: 0; position: relative; }
         .setup-title { font-size: 1.8rem; font-weight: 900; margin: 0; }
         .total-summary { font-size: 1rem; color: var(--text-muted); font-weight: 700; margin-top: 5px; }
         
+        .theme-toggle-btn {
+            position: absolute; right: 0; top: 15px; 
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--card-white); border: 1px solid var(--input-border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; cursor: pointer; box-shadow: 0 2px 5px var(--divider-color);
+            -webkit-user-select: none; user-select: none;
+        }
+
         .inputs-list { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding: 5px 0; justify-content: center; }
-        .setup-card { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 12px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.03); flex: 1; min-height: 0; border-left: 8px solid; }
+        .setup-card { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 12px; background: var(--card-white); box-shadow: 0 1px 3px var(--divider-color); flex: 1; min-height: 0; border-left: 8px solid; transition: background-color 0.3s ease; }
         .card-name { font-weight: 900; font-size: 1rem; color: var(--text-dark); }
         .input-group { display: flex; flex-direction: column; align-items: center; gap: 2px; }
         .input-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); }
-        .setup-card input { border: 1px solid #d2d2d7; background: #f5f5f7; padding: 4px; border-radius: 6px; font-size: 1.1rem; text-align: center; font-weight: 900; width: 100%; }
+        .setup-card input { border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-dark); padding: 4px; border-radius: 6px; font-size: 1.1rem; text-align: center; font-weight: 900; width: 100%; transition: background-color 0.3s ease, color 0.3s ease; }
 
         /* --- 運動畫面 --- */
         .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 10px 0; flex-shrink: 0;}
-        .stage-box { padding: 12px 2px; border-radius: 10px; text-align: center; font-weight: 900; font-size: 0.8rem; color: var(--text-muted); background: #fff; cursor: pointer; transition: 0.3s; -webkit-user-select: none; user-select: none; }
-        .stage-box.active { background: #1d1d1f !important; color: #fff !important; }
+        .stage-box { padding: 12px 2px; border-radius: 10px; text-align: center; font-weight: 900; font-size: 0.8rem; color: var(--text-muted); background: var(--card-white); cursor: pointer; transition: 0.3s; -webkit-user-select: none; user-select: none; }
+        .stage-box.active { background: var(--text-dark) !important; color: var(--bg-page) !important; }
         .main-display { flex: 1; margin: 10px 0; border-radius: 28px; display: flex; flex-direction: column; justify-content: center; padding: 30px; background-color: var(--card-white); position: relative; overflow: hidden; transition: background-color 0.8s ease; }
         .timer-text { font-size: 7rem; font-weight: 900; line-height: 1; margin: 10px 0; tabular-nums; letter-spacing: -2px; text-align: center; }
         .info-row { font-size: 1.4rem; font-weight: 900; line-height: 1.8; z-index: 2; }
-        .target-label { font-size: 0.7rem; vertical-align: middle; color: var(--text-dark); background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; margin-right: 6px; font-weight: 800; }
+        .target-label { font-size: 0.7rem; vertical-align: middle; color: var(--bg-page); background: var(--text-dark); padding: 2px 6px; border-radius: 4px; margin-right: 6px; font-weight: 800; }
 
         @keyframes soft-pulse { 0% { background-color: transparent; } 50% { background-color: var(--flash-red); } 100% { background-color: transparent; } }
         .flash-pulse { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
@@ -69,29 +103,18 @@
         button { border: none; padding: 18px; font-size: 1.3rem; font-weight: 900; border-radius: 20px; cursor: pointer; width: 100%; height: 65px; transition: opacity 0.2s; white-space: nowrap; -webkit-user-select: none; user-select: none; }
         button:active { opacity: 0.8; }
         .btn-finish, .btn-start { background: var(--btn-blue-bg); color: #fff; }
-        .btn-gray { background: #e8e8ed; color: var(--text-dark); }
+        .btn-gray { background: var(--input-bg); color: var(--text-dark); border: 1px solid var(--input-border); }
         .btn-red { background: #ff3b30 !important; color: #fff !important; }
-        .control-group { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; width: 100%; }
+        .control-group { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; width: 100%; }
         .control-group button { font-size: 1.15rem; }
 
         /* --- 結算畫面 --- */
-        #resultView {
-            background-color: var(--bg-page);
-            padding: 0; 
-            overflow: hidden;
-        }
+        #resultView { background-color: var(--bg-page); padding: 0; overflow: hidden; }
 
         .bg-award-watermark {
-            position: absolute; 
-            top: 12dvh; 
-            left: -10dvw; 
-            transform: rotate(-15deg); 
-            font-size: 38rem; 
-            font-weight: 900; 
-            color: rgba(250, 120, 50, 0.05); 
-            pointer-events: none; user-select: none; z-index: 0;
-            line-height: 1;
-            white-space: nowrap;
+            position: absolute; top: 12dvh; left: -10dvw; transform: rotate(-15deg); 
+            font-size: 38rem; font-weight: 900; color: rgba(250, 120, 50, 0.05); 
+            pointer-events: none; user-select: none; z-index: 0; line-height: 1; white-space: nowrap;
         }
 
         .result-container {
@@ -104,8 +127,7 @@
             background-color: var(--res-title-bg); color: var(--res-title-text);
             padding: 18px 40px; border-radius: 18px; font-size: 2.5rem; font-weight: 900;
             letter-spacing: -1.5px; margin-bottom: 25px; box-shadow: 0 5px 0 rgba(255,159,0,0.1);
-            position: relative;
-            white-space: nowrap; 
+            position: relative; white-space: nowrap; 
         }
 
         .result-progress-bar {
@@ -119,9 +141,9 @@
         .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; z-index: 1;}
         
         .stat-card-plane {
-            background: #fff; padding: 15px; border-radius: 20px; 
+            background: var(--card-white); padding: 15px; border-radius: 20px; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            gap: 10px; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.015);
+            gap: 10px; position: relative; box-shadow: 0 2px 10px var(--divider-color);
             aspect-ratio: 1 / 1; 
         }
         
@@ -135,17 +157,16 @@
         .stat-value-plane { font-size: 2.6rem; font-weight: 900; color: var(--text-dark); letter-spacing: -1px; line-height: 1;}
 
         .decorative-divider {
-            flex: 1; 
-            display: flex; align-items: center; justify-content: center;
-            color: var(--text-muted); opacity: 0.3; font-size: 1.1rem; letter-spacing: 6px;
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            width: 100%;
         }
 
         .result-footer-cute {
-            width: 100%; background: rgba(255,255,255,0.7); padding: 15px; border-radius: 15px;
+            width: 100%; background: var(--card-white); padding: 15px; border-radius: 15px;
             text-align: center; color: var(--text-muted); margin-bottom: 10px; z-index: 1;
         }
         .cute-main { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); }
-        .cute-sub { font-size: 0.8rem; color: #a1a1aa; margin-top: 6px; font-weight: 700; }
+        .cute-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; font-weight: 700; }
 
         @media (max-height: 670px) {
             .timer-text { font-size: 5.5rem; }
@@ -164,11 +185,15 @@
     <div id="setupView" class="view-section active-view">
         <div class="setup-header">
             <h1 class="setup-title">設定各階段目標</h1>
-            <div class="total-summary">訓練總時長：<span id="setupTotal" style="font-weight: 900; color: #000;">60</span> 分鐘</div>
+            <div class="total-summary">訓練總時長：<span id="setupTotal" style="font-weight: 900; color: var(--text-dark);">60</span> 分鐘</div>
+            <div id="themeBtn" class="theme-toggle-btn" onclick="toggleTheme()">🌙</div>
         </div>
         <div class="inputs-list" id="inputsList"></div>
         <div class="button-area">
-            <button class="btn-finish" onclick="startWorkout()">完成設定並開始訓練</button>
+            <div class="control-group">
+                <button class="btn-gray" onclick="resetSettings()">恢復預設</button>
+                <button class="btn-finish" onclick="startWorkout()">開始訓練</button>
+            </div>
         </div>
     </div>
 
@@ -186,8 +211,8 @@
         </div>
         <div class="button-area">
             <div class="control-group">
-                <button id="playBtn" class="btn-start" onclick="toggle()">開始運動</button>
                 <button id="sideBtn" class="btn-gray" onclick="handleSideBtn()">回設定</button>
+                <button id="playBtn" class="btn-start" onclick="toggle()">開始運動</button>
             </div>
         </div>
     </div>
@@ -205,7 +230,7 @@
                     <div class="prog-dot" style="background:var(--c3)"></div>
                     <div class="prog-dot" style="background:var(--c4)"></div>
                     <div class="prog-dot" style="background:var(--c5)"></div>
-                    <div class="prog-dot" style="background:#e0e0e0"></div> 
+                    <div class="prog-dot" style="background:var(--text-muted)"></div> 
                 </div>
 
                 <div class="result-main-text">記得補充蛋白質與水分！</div>
@@ -218,15 +243,22 @@
                     </div>
                     <div class="stat-card-plane">
                         <div class="stat-badge" style="background:var(--c4); color:var(--c4-t);">★</div>
-                        <span class="stat-label-plane">最高挑戰</span>
-                        <span id="resMaxStage" class="stat-value-plane" style="font-size: 2rem;">暖身</span>
+                        <span class="stat-label-plane">行走距離</span>
+                        <span id="resDistance" class="stat-value-plane" style="font-size: 2.2rem;">0.00 km</span>
                     </div>
                 </div>
                 
                 <div style="flex: 1;"></div>
                 
                 <div class="decorative-divider">
-                    ✦ · · 🏃 · · ✦
+                    <div class="result-progress-bar" style="margin-bottom: 0;">
+                        <div class="prog-dot" style="background:var(--c1)"></div>
+                        <div class="prog-dot" style="background:var(--c2)"></div>
+                        <div class="prog-dot" style="background:var(--c3)"></div>
+                        <div class="prog-dot" style="background:var(--c4)"></div>
+                        <div class="prog-dot" style="background:var(--c5)"></div>
+                        <div class="prog-dot" style="background:var(--text-muted)"></div> 
+                    </div>
                 </div>
 
                 <div class="result-footer-cute">
@@ -236,7 +268,7 @@
             </div>
         </div>
 
-        <div class="control-group" id="actionButtons" style="width: 100%; padding: 0 20px 20px 20px;">
+        <div class="control-group" id="actionButtons" style="width: 100%; padding: 0 20px 20px 20px; grid-template-columns: 1fr 1fr;">
             <button class="btn-finish" onclick="location.reload()">返回設定</button>
             <button class="btn-gray" id="shareBtn" onclick="shareResult()">分享與儲存</button>
         </div>
@@ -269,15 +301,20 @@
     // ----------------------------------------
 
     const originalStages = [
-        { n: "暖身", d: 8, i: 3, s: 5, bg: "#e0f2ff" },
-        { n: "預熱", d: 7, i: 8, s: 5.5, bg: "#e0fff2" },
-        { n: "挑戰", d: 15, i: 12, s: 5, bg: "#e8f5e9" },
-        { n: "魔王", d: 15, i: 15, s: 4.5, bg: "#fff3e0" },
-        { n: "高位", d: 10, i: 9, s: 6, bg: "#fce4ec" },
-        { n: "緩和", d: 5, i: 0, s: 5, bg: "#ffffff" }
+        { n: "暖身", d: 8, i: 3, s: 5, bg: "var(--c1)" },
+        { n: "預熱", d: 7, i: 8, s: 5.5, bg: "var(--c2)" },
+        { n: "挑戰", d: 15, i: 12, s: 5, bg: "var(--c3)" },
+        { n: "魔王", d: 15, i: 15, s: 4.5, bg: "var(--c4)" },
+        { n: "高位", d: 10, i: 9, s: 6, bg: "var(--c5)" },
+        { n: "緩和", d: 5, i: 0, s: 5, bg: "var(--c6)" }
     ];
 
-    let stages = [...originalStages];
+    const STORAGE_KEY = 'zone2_stages_v44';
+    const THEME_KEY = 'zone2_theme_pref';
+    
+    let stages = [];
+    let stageTimeTracker = [0, 0, 0, 0, 0, 0]; 
+
     let idx = 0, sec = 0, total = 0, run = false, timerInterval, maxIdxReached = 0;
     let isPrep = false, prepSec = 10;
     let wakeLock = null;
@@ -297,7 +334,6 @@
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
-    // --- 新增：解鎖音效權限 ---
     function initAudio() {
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
@@ -321,7 +357,40 @@
         layer.classList.add('pulse-active');
     }
 
+    // --- 主題切換邏輯 ---
+    function initTheme() {
+        const isDark = localStorage.getItem(THEME_KEY) === 'dark';
+        if (isDark) {
+            document.body.classList.add('dark-theme');
+            document.getElementById('themeBtn').innerText = '☀️';
+        }
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        body.classList.toggle('dark-theme');
+        const isDark = body.classList.contains('dark-theme');
+        localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+        document.getElementById('themeBtn').innerText = isDark ? '☀️' : '🌙';
+    }
+
     function initSetup() {
+        initTheme(); // 載入主題設定
+        
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        if (savedData) {
+            try {
+                stages = JSON.parse(savedData);
+            } catch (e) {
+                stages = JSON.parse(JSON.stringify(originalStages));
+            }
+        } else {
+            stages = JSON.parse(JSON.stringify(originalStages));
+        }
+        renderSetupList();
+    }
+
+    function renderSetupList() {
         const list = document.getElementById('inputsList');
         list.innerHTML = '';
         stages.forEach((s, i) => {
@@ -334,6 +403,14 @@
                 </div>`;
         });
         calcTotal();
+    }
+
+    function resetSettings() {
+        if (confirm("確定要清除記憶，恢復預設的菜單設定嗎？")) {
+            localStorage.removeItem(STORAGE_KEY);
+            stages = JSON.parse(JSON.stringify(originalStages));
+            renderSetupList();
+        }
     }
 
     function calcTotal() {
@@ -357,17 +434,23 @@
     }
 
     function startWorkout() {
-        initAudio(); // 確保使用者點擊時解鎖音效權限
+        initAudio(); 
 
         stages.forEach((s, i) => { 
             s.d = parseInt(document.getElementById(`d-${i}`).value) || 1; 
             s.i = document.getElementById(`i-${i}`).value || 0;
-            s.s = document.getElementById(`s-${i}`).value || 5;
+            s.s = parseFloat(document.getElementById(`s-${i}`).value) || 5;
         });
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stages));
+
         const grid = document.getElementById('stageGrid');
         grid.innerHTML = '';
         stages.forEach((s, i) => { grid.innerHTML += `<div class="stage-box s-${i}" onclick="jump(${i})">${s.n}</div>`; });
+        
         idx = 0; sec = 0; total = 0; isPrep = true; prepSec = 10; maxIdxReached = 0;
+        stageTimeTracker.fill(0); 
+
         switchView('workoutView');
         updateUI();
     }
@@ -408,6 +491,8 @@
             if (prepSec <= 0) { isPrep = false; if (run) playBeep(1200, 0.4); }
         } else {
             sec++; total++;
+            stageTimeTracker[idx]++; 
+
             const s = stages[idx];
             const rem = (s.d * 60) - sec;
             if (run) {
@@ -423,7 +508,7 @@
     }
 
     function toggle() {
-        initAudio(); // 確保使用者點擊時解鎖音效權限
+        initAudio(); 
 
         run = !run;
         const btn = document.getElementById('playBtn');
@@ -453,8 +538,15 @@
     function showSummary() {
         clearInterval(timerInterval);
         releaseWakeLock(); 
+
         document.getElementById('resTotalTime').innerText = fmt(total);
-        document.getElementById('resMaxStage').innerText = stages[maxIdxReached].n;
+        
+        let calcDistance = 0;
+        stageTimeTracker.forEach((timeInSec, i) => {
+            calcDistance += (timeInSec / 3600) * stages[i].s;
+        });
+        document.getElementById('resDistance').innerText = calcDistance.toFixed(2) + " km";
+
         switchView('resultView');
     }
 
@@ -475,19 +567,22 @@
                 throw new Error("截圖模組尚未準備好");
             }
 
+            // 判斷目前是否開啟深色模式
+            const isDark = document.body.classList.contains('dark-theme');
             const canvas = await html2canvas(captureArea, {
                 scale: 2,
-                backgroundColor: '#f5f5f7'
+                backgroundColor: isDark ? '#000000' : '#f5f5f7'
             });
             
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], 'Zone2_Workout_Result.png', { type: 'image/png' });
+                const distanceStr = document.getElementById('resDistance').innerText;
                 
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
                             title: 'Zone2 訓練完成',
-                            text: `Zone2訓練達成！總時間：${fmt(total)}，最高挑戰：${stages[maxIdxReached].n}。`,
+                            text: `Zone2訓練達成！總時間：${fmt(total)}，總行走距離：${distanceStr}。`,
                             files: [file]
                         });
                     } catch (err) {
