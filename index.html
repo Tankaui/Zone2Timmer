@@ -3,7 +3,513 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Zone2 訓練儀表板 <!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Zone2 訓練儀表板 v45.8.6</title>
+    
+    <link rel="manifest" href="./manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Zone2">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+
+    <style>
+        :root {
+            --bg-page: #f5f5f7;
+            --card-white: #ffffff;
+            --text-dark: #1d1d1f;
+            --text-muted: #86868b;
+            --accent: #40b0e5; 
+            --c1: #e0f2ff; --c1-t: #007aff;
+            --c2: #e0fff2; --c2-t: #00af91;
+            --c3: #e8f5e9; --c3-t: #34c759;
+            --c4: #fff3e0; --c4-t: #ff9500;
+            --c5: #fce4ec; --c5-t: #ff2d55;
+            --c6: #ffffff; --c6-t: #1d1d1f;
+            --btn-blue-bg: #40b0e5;
+            --prep-bg: #e5e5e7;
+            --flash-red: rgba(255, 59, 48, 0.2);
+            --res-title-bg: #fffac2;
+            --res-title-text: #ff9f00;
+            --input-bg: #f5f5f7;
+            --input-border: #d2d2d7;
+            --divider-color: rgba(0,0,0,0.03);
+        }
+
+        body.dark-theme {
+            --bg-page: #000000;
+            --card-white: #1c1c1e;
+            --text-dark: #f5f5f7;
+            --text-muted: #a1a1a6;
+            --btn-blue-bg: #0a84ff;
+            --prep-bg: #2c2c2e;
+            --res-title-bg: #332b00;
+            --res-title-text: #ffd60a;
+            --input-bg: #2c2c2e;
+            --input-border: #3a3a3c;
+            --divider-color: rgba(255,255,255,0.05);
+            --c1: #003366; --c1-t: #66b3ff;
+            --c2: #004d33; --c2-t: #33cc99;
+            --c3: #1a4d1a; --c3-t: #66ff66;
+            --c4: #663300; --c4-t: #ffcc66;
+            --c5: #660033; --c5-t: #ff6699;
+            --c6: #2c2c2e; --c6-t: #f5f5f7;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
+
+        body { 
+            font-family: -apple-system, "Noto Sans TC", sans-serif; 
+            background-color: var(--bg-page); color: var(--text-dark); 
+            height: 100vh; height: 100dvh; 
+            display: flex; flex-direction: column;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            overscroll-behavior-y: none;
+            -webkit-text-size-adjust: 100%;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .view-section { display: none; flex-direction: column; flex: 1; height: 100%; width: 100%; padding: 10px 20px; opacity: 0; transition: opacity 0.4s ease-in-out; position: relative; }
+        .view-section.active-view { display: flex; opacity: 1; }
+
+        .setup-header { text-align: center; padding: 10px 0; flex-shrink: 0; position: relative; }
+        .setup-title { font-size: 1.8rem; font-weight: 900; margin: 0; }
+        .total-summary { font-size: 1rem; color: var(--text-muted); font-weight: 700; margin-top: 2px; }
+        
+        .theme-toggle-btn {
+            position: absolute; right: 0; top: 10px; 
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--card-white); border: 1px solid var(--input-border);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 2px 5px var(--divider-color);
+            color: var(--text-dark);
+        }
+
+        .inputs-list { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow: hidden; padding: 5px 0; }
+        .setup-card { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 12px; background: var(--card-white); box-shadow: 0 1px 3px var(--divider-color); flex: 1; min-height: 0; border-left: 8px solid; transition: background-color 0.3s ease; }
+        .card-name { font-weight: 900; font-size: 1rem; color: var(--text-dark); }
+        .input-group { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .input-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); }
+        .setup-card input { border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-dark); padding: 4px; border-radius: 6px; font-size: 1.1rem; text-align: center; font-weight: 900; width: 100%; transition: background-color 0.3s ease, color 0.3s ease; }
+
+        .stage-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 10px 0; flex-shrink: 0;}
+        .stage-box { padding: 12px 2px; border-radius: 10px; text-align: center; font-weight: 900; font-size: 0.8rem; color: var(--text-muted); background: var(--card-white); cursor: pointer; transition: 0.3s; }
+        .stage-box.active { background: var(--text-dark) !important; color: var(--bg-page) !important; }
+        
+        .main-display { flex: 1; margin: 10px 0; border-radius: 28px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px 15px; background-color: var(--card-white); position: relative; overflow: hidden; transition: background-color 0.8s ease; }
+        
+        .stage-title { width: 100%; font-weight: 900; color: var(--text-muted); font-size: 1.2rem; z-index: 2; text-align: left; padding-left: 10%; margin-bottom: 5px; }
+        .timer-text { display: block; width: 100%; font-size: clamp(4.5rem, 21vw, 7rem); font-weight: 900; line-height: 1; margin: 10px auto; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; letter-spacing: 0; text-align: center; }
+        .info-row { width: 100%; font-size: 1.4rem; font-weight: 900; line-height: 1.8; z-index: 2; text-align: left; padding-left: 10%; }
+        .target-label { font-size: 0.7rem; vertical-align: middle; color: var(--bg-page); background: var(--text-dark); padding: 2px 6px; border-radius: 4px; margin-right: 6px; font-weight: 800; }
+        .status-row-wrapper { min-height: 2.6rem; margin-top: 2px; }
+        #nextStageTimeRow { color: var(--text-dark); }
+        #totalTimeRow { margin-top: 5px; color: var(--text-muted); font-size: 1.1rem; }
+
+        @keyframes soft-pulse { 0% { background-color: transparent; } 50% { background-color: var(--flash-red); } 100% { background-color: transparent; } }
+        .flash-pulse { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        .pulse-active { animation: soft-pulse 0.4s ease-in-out; }
+
+        .button-area { padding: 15px 0; flex-shrink: 0; width: 100%; }
+        button { border: none; padding: 18px; font-size: 1.3rem; font-weight: 900; border-radius: 20px; cursor: pointer; width: 100%; height: 65px; transition: opacity 0.2s, background-color 0.2s; white-space: nowrap; }
+        button:active { opacity: 0.8; }
+        .btn-finish, .btn-start { background: var(--btn-blue-bg); color: #fff; }
+        .btn-gray { background: var(--input-bg); color: var(--text-dark); border: 1px solid var(--input-border); }
+        .btn-red { background: #ff3b30 !important; color: #fff !important; }
+        .btn-small { padding: 0; font-size: 0.85rem; font-weight: 700; height: 38px; border-radius: 12px; background: transparent; color: var(--text-muted); border: 1px dashed var(--input-border); }
+
+        .control-group { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; width: 100%; }
+        .control-group-small { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; width: 100%; margin-bottom: 12px; }
+
+        .guide-card { background: var(--card-white); border-radius: 20px; padding: 25px 20px; margin-top: 20px; box-shadow: 0 4px 15px var(--divider-color); }
+        .guide-title { font-size: 1.4rem; font-weight: 900; color: var(--text-dark); margin-bottom: 15px; text-align: center; }
+        .guide-desc { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); margin-bottom: 25px; text-align: center; line-height: 1.5; }
+        .guide-input-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed var(--input-border); }
+        .guide-label { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); }
+        .guide-input { border: 2px solid var(--btn-blue-bg); background: var(--input-bg); color: var(--text-dark); font-size: 1.5rem; font-weight: 900; text-align: center; width: 100px; padding: 8px; border-radius: 12px; }
+
+        #resultView { background-color: var(--bg-page); padding: 0; overflow: hidden; }
+        .bg-award-watermark { position: absolute; top: 12dvh; left: -10dvw; transform: rotate(-15deg); font-size: 38rem; font-weight: 900; color: rgba(250, 120, 50, 0.05); pointer-events: none; z-index: 0; line-height: 1; white-space: nowrap; }
+        .result-container { flex: 1; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 1; max-width: 90dvw; margin: auto; padding: 40px 30px 20px 30px; }
+        .result-title-card { background-color: var(--res-title-bg); color: var(--res-title-text); padding: 18px 40px; border-radius: 18px; font-size: 2.5rem; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 25px; box-shadow: 0 5px 0 rgba(255,159,0,0.1); position: relative; white-space: nowrap; }
+        .result-progress-bar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0px; width: 100%; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 25px; flex-shrink: 0; }
+        .prog-dot { height: 100%; }
+        .result-main-text { color: var(--text-dark); font-size: 1.3rem; font-weight: 800; margin-bottom: 25px; z-index: 1; white-space: nowrap;}
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; z-index: 1;}
+        .stat-card-plane { background: var(--card-white); padding: 15px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; position: relative; box-shadow: 0 2px 10px var(--divider-color); aspect-ratio: 1 / 1; }
+        .stat-badge { position: absolute; top: -10px; left: -10px; width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1rem; }
+        .stat-label-plane { font-size: 0.9rem; font-weight: 800; color: var(--text-muted); margin-bottom: -5px; }
+        .stat-value-plane { font-size: 2.6rem; font-weight: 900; color: var(--text-dark); letter-spacing: -1px; line-height: 1;}
+        .result-footer-cute { width: 100%; background: var(--card-white); padding: 15px; border-radius: 15px; text-align: center; color: var(--text-muted); margin-bottom: 10px; z-index: 1; }
+        .cute-main { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); }
+        .cute-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <div id="setupView" class="view-section active-view">
+        <div class="setup-header">
+            <h1 class="setup-title">設定各階段目標</h1>
+            <div class="total-summary">訓練總時長：<span id="setupTotal" style="font-weight: 900; color: var(--text-dark);">60</span> 分鐘</div>
+            <div id="themeBtn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="切換深淺色模式" title="切換深淺色模式"></div>
+        </div>
+        <div class="inputs-list" id="inputsList"></div>
+        <div class="button-area">
+            <div class="control-group-small">
+                <button class="btn-small" onclick="openGuidedView()" style="color: var(--btn-blue-bg); border-color: var(--btn-blue-bg);">★ 引導設定</button>
+                <button class="btn-small" onclick="exportSettings()">導出設定</button>
+                <button class="btn-small" onclick="document.getElementById('importFile').click()">導入設定</button>
+                <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importSettings(event)">
+            </div>
+            <div class="control-group">
+                <button class="btn-gray" onclick="resetSettings()">恢復預設</button>
+                <button class="btn-finish" onclick="startWorkout()">開始訓練</button>
+            </div>
+        </div>
+        <div style="position: absolute; bottom: 5px; right: 15px; font-size: 0.55rem; font-weight: 800; color: var(--text-muted); opacity: 0.3; pointer-events: none; letter-spacing: 0.5px;">v45.8.6</div>
+    </div>
+
+    <div id="guidedView" class="view-section">
+        <div class="setup-header"><h1 class="setup-title">專屬配速生成</h1></div>
+        <div style="flex: 1; overflow-y: auto;">
+            <div class="guide-card">
+                <div class="guide-title">輸入您的生理參數</div>
+                <div class="guide-desc">系統將根據186cm/60分鐘的黃金比例，</br>設計各階段的「理想速度」與「訓練時長」。</div>
+                <div class="guide-input-row">
+                    <span class="guide-label">身高 (公分)</span>
+                    <input type="number" inputmode="numeric" id="guideHeight" class="guide-input" value="170" onclick="this.select()">
+                </div>
+                <div class="guide-input-row">
+                    <span class="guide-label">預計運動 (分鐘)</span>
+                    <input type="number" inputmode="numeric" id="guideTime" class="guide-input" value="45" onclick="this.select()">
+                </div>
+            </div>
+        </div>
+        <div class="button-area">
+            <div class="control-group">
+                <button class="btn-gray" onclick="switchView('setupView')">取消返回</button>
+                <button class="btn-finish" onclick="generateGuidedPlan()">產生菜單</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="workoutView" class="view-section">
+        <div class="stage-grid" id="stageGrid"></div>
+        <div class="main-display" id="mainDisplay">
+            <div id="flashLayer" class="flash-pulse"></div>
+            <div id="curStageName" class="stage-title">準備中</div>
+            <div class="timer-text" id="timer" style="z-index: 2;">00:00</div>
+            <div class="info-row" id="infoRow" style="z-index: 2;">
+                <div><span id="inclineLabel"></span>坡度：<span id="incline">--</span>%</div>
+                <div><span id="speedLabel"></span>速度：<span id="speed">--</span> km/h</div>
+                <div class="status-row-wrapper">
+                    <div id="nextStageTimeRow" style="display: none;"><span class="target-label">NEXT</span>時長：<span id="nextDuration">--</span> 分鐘</div>
+                    <div id="totalTimeRow" style="display: none;">實際累積：<span id="totalTime">00:00</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="button-area">
+            <div class="control-group">
+                <button id="sideBtn" class="btn-gray" onclick="handleSideBtn()">回設定</button>
+                <button id="playBtn" class="btn-start" onclick="toggle()">開始運動</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultView" class="view-section">
+        <div id="captureArea" style="position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; background-color: var(--bg-page);">
+            <div class="bg-award-watermark">獎</div>
+            <div class="result-container">
+                <div class="result-title-card">- 恭喜訓練完成 -</div>
+                <div class="result-progress-bar" id="resultBarTop"></div>
+                <div class="result-main-text">完成了一場很讚的走路運動！</div>
+                <div class="result-grid">
+                    <div class="stat-card-plane">
+                        <div class="stat-badge" style="background:var(--c2); color:var(--c2-t);">#</div>
+                        <span class="stat-label-plane">累積總時長</span>
+                        <span id="resTotalTime" class="stat-value-plane">00:00</span>
+                    </div>
+                    <div class="stat-card-plane">
+                        <div class="stat-badge" style="background:var(--c4); color:var(--c4-t);">★</div>
+                        <span class="stat-label-plane">行走距離(km)</span>
+                        <span id="resDistance" class="stat-value-plane">0.0</span>
+                    </div>
+                </div>
+                <div style="flex: 1; display: flex; align-items: center; width: 100%;">
+                    <div class="result-progress-bar" id="resultBarBottom"></div>
+                </div>
+                <div class="result-footer-cute">
+                    <div class="cute-main">今天也超級棒喔！( *ˊᵕˋ)✩︎‧₊</div>
+                    <div class="cute-sub">記得好好休息，補充水分跟蛋白質</div>
+                </div>
+            </div>
+        </div>
+        <div class="control-group" id="actionButtons" style="width: 100%; padding: 0 20px 20px 20px; grid-template-columns: 1fr 1fr;">
+            <button class="btn-finish" onclick="location.reload()">返回設定</button>
+            <button class="btn-gray" id="shareBtn" onclick="shareResult()">分享與儲存</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+    const originalStages = [
+        { n: "暖身", d: 8, i: 3, s: 5, bg: "var(--c1)" },
+        { n: "預熱", d: 7, i: 8, s: 5.5, bg: "var(--c2)" },
+        { n: "挑戰", d: 15, i: 12, s: 5, bg: "var(--c3)" },
+        { n: "魔王", d: 12, i: 15, s: 4.5, bg: "var(--c4)" },
+        { n: "高位", d: 13, i: 9, s: 5.5, bg: "var(--c5)" },
+        { n: "緩和", d: 5, i: 0, s: 5, bg: "var(--c6)" }
+    ];
+
+    const STORAGE_KEY = 'zone2_stages_v45';
+    const THEME_KEY = 'zone2_theme_pref';
+    const moonIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+    const sunIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+
+    let stages = [], stageTimeTracker = [0, 0, 0, 0, 0, 0]; 
+    let idx = 0, sec = 0, total = 0, run = false, timerInterval;
+    let isPrep = false, prepSec = 10, wakeLock = null;
+    let referenceTime = 0, audioUnlocked = false;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(freq, duration) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.value = freq; gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function unlockAudio() {
+        if (audioUnlocked) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        gain.gain.value = 0;
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.01);
+        audioUnlocked = true;
+    }
+
+    async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} }
+    function releaseWakeLock() { if (wakeLock) { wakeLock.release(); wakeLock = null; } }
+
+    function toggleTheme() {
+        document.body.classList.toggle('dark-theme');
+        const isDark = document.body.classList.contains('dark-theme');
+        localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+        document.getElementById('themeBtn').innerHTML = isDark ? sunIcon : moonIcon;
+    }
+
+    function validateInput(el, min, max) {
+        let val = parseFloat(el.value);
+        if (isNaN(val) || val < min) el.value = min;
+        if (val > max) el.value = max;
+        calcTotal();
+    }
+
+    function renderSetupList() {
+        const list = document.getElementById('inputsList');
+        list.innerHTML = '';
+        stages.forEach((s, i) => {
+            list.innerHTML += `<div class="setup-card" style="border-left-color: ${s.bg}">
+                <div class="card-name">${s.n}</div>
+                <div class="input-group"><span class="input-label">時間</span><input type="number" inputmode="numeric" pattern="[0-9]*" id="d-${i}" value="${s.d}" min="0" onblur="validateInput(this, 0, 180)" oninput="calcTotal()" onclick="this.select()"></div>
+                <div class="input-group"><span class="input-label">坡度</span><input type="number" inputmode="numeric" pattern="[0-9]*" id="i-${i}" value="${s.i}" min="0" onblur="validateInput(this, 0, 40)" onclick="this.select()"></div>
+                <div class="input-group"><span class="input-label">速度</span><input type="number" inputmode="decimal" id="s-${i}" value="${s.s}" step="0.1" min="0.1" onblur="validateInput(this, 0.1, 30)" onclick="this.select()"></div>
+            </div>`;
+        });
+        calcTotal();
+    }
+
+    function calcTotal() {
+        let t = 0;
+        stages.forEach((_, i) => { t += parseInt(document.getElementById(`d-${i}`).value) || 0; });
+        document.getElementById('setupTotal').innerText = t;
+    }
+
+    function switchView(id) {
+        document.querySelectorAll('.view-section').forEach(v => {
+            v.classList.remove('active-view');
+            setTimeout(() => { if (!v.classList.contains('active-view')) v.style.display = 'none'; }, 400);
+        });
+        const next = document.getElementById(id);
+        next.style.display = 'flex';
+        setTimeout(() => next.classList.add('active-view'), 50);
+    }
+
+    function startWorkout() {
+        let hasValidStage = false;
+        stages.forEach((s, i) => { 
+            s.d = parseInt(document.getElementById(`d-${i}`).value) || 0;
+            s.i = document.getElementById(`i-${i}`).value || 0;
+            s.s = parseFloat(document.getElementById(`s-${i}`).value) || 5;
+            if (s.d > 0) hasValidStage = true;
+        });
+        if (!hasValidStage) return alert("請至少設定一個階段的時間大於 0 分鐘");
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stages));
+        const grid = document.getElementById('stageGrid');
+        grid.innerHTML = '';
+        stages.forEach((s, i) => { 
+            let dimStyle = s.d <= 0 ? "opacity: 0.3; pointer-events: none;" : "";
+            grid.innerHTML += `<div class="stage-box s-${i}" style="${dimStyle}" onclick="jump(${i})">${s.n}</div>`; 
+        });
+        idx = 0; sec = 0; total = 0; stageTimeTracker.fill(0);
+        while (idx < stages.length && stages[idx].d <= 0) { idx++; }
+        isPrep = true; prepSec = 10;
+        switchView('workoutView');
+        updateUI();
+    }
+
+    function updateUI() {
+        const s = stages[idx];
+        const display = document.getElementById('mainDisplay');
+        const nextRow = document.getElementById('nextStageTimeRow');
+        const totalRow = document.getElementById('totalTimeRow');
+        document.querySelectorAll('.stage-box').forEach((b, i) => b.classList.toggle('active', i === idx));
+        if (isPrep) {
+            display.style.backgroundColor = "var(--prep-bg)";
+            document.getElementById('curStageName').innerText = `即將進入：${s.n}`;
+            document.getElementById('timer').innerText = `00:${prepSec.toString().padStart(2, '0')}`;
+            document.getElementById('inclineLabel').innerHTML = `<span class="target-label">NEXT</span>`;
+            document.getElementById('speedLabel').innerHTML = `<span class="target-label">NEXT</span>`;
+            totalRow.style.display = "none"; nextRow.style.display = "block";
+            document.getElementById('nextDuration').innerText = s.d;
+        } else {
+            display.style.backgroundColor = s.bg;
+            document.getElementById('curStageName').innerText = s.n;
+            document.getElementById('timer').innerText = fmt((s.d * 60) - sec);
+            document.getElementById('inclineLabel').innerHTML = ""; 
+            document.getElementById('speedLabel').innerHTML = "";
+            nextRow.style.display = "none"; totalRow.style.display = "block";
+            document.getElementById('totalTime').innerText = fmt(total);
+        }
+        document.getElementById('incline').innerText = s.i;
+        document.getElementById('speed').innerText = s.s;
+    }
+
+    function tickLogic(isCatchingUp = false) {
+        if (isPrep) {
+            prepSec--;
+            if (!isCatchingUp && prepSec <= 3 && prepSec > 0) playBeep(800, 0.1);
+            if (prepSec <= 0) { isPrep = false; if (!isCatchingUp) playBeep(1200, 0.4); }
+        } else {
+            sec++; total++; stageTimeTracker[idx]++;
+            const rem = (stages[idx].d * 60) - sec;
+            if (!isCatchingUp && (rem === 30 || (rem <= 5 && rem > 0))) { playBeep(rem === 30 ? 600 : 1000, 0.1); softFlash(); }
+            if (sec >= stages[idx].d * 60) {
+                idx++;
+                while (idx < stages.length && stages[idx].d <= 0) { idx++; }
+                if (idx < stages.length) { sec = 0; isPrep = true; prepSec = 10; } 
+                else { showSummary(); return; }
+            }
+        }
+        if (!isCatchingUp) updateUI();
+    }
+
+    function toggle() {
+        unlockAudio();
+        run = !run;
+        const btn = document.getElementById('playBtn');
+        const side = document.getElementById('sideBtn');
+        if (run) {
+            requestWakeLock();
+            btn.innerText = "暫停"; btn.classList.add('btn-red');
+            side.innerText = "回設定"; side.classList.remove('btn-red');
+            referenceTime = Date.now();
+            timerInterval = setInterval(() => {
+                let now = Date.now(), elapsed = now - referenceTime;
+                if (elapsed >= 1000) {
+                    let ticks = Math.floor(elapsed / 1000);
+                    referenceTime += ticks * 1000;
+                    for (let i = 0; i < ticks; i++) tickLogic(i !== ticks - 1);
+                }
+            }, 200);
+        } else {
+            releaseWakeLock();
+            btn.innerText = "繼續運動"; btn.classList.remove('btn-red');
+            side.innerText = "結束運動"; side.classList.add('btn-red');
+            clearInterval(timerInterval);
+        }
+    }
+
+    function handleSideBtn() {
+        const isEnd = document.getElementById('sideBtn').classList.contains('btn-red');
+        if (confirm(isEnd ? "確定要提前結束嗎？" : "確定要回設定嗎？")) {
+            if (isEnd) showSummary(); else location.reload();
+        }
+    }
+
+    function showSummary() {
+        clearInterval(timerInterval); releaseWakeLock();
+        document.getElementById('resTotalTime').innerText = fmt(total);
+        let dist = 0; stageTimeTracker.forEach((t, i) => dist += (t/3600)*stages[i].s);
+        document.getElementById('resDistance').innerText = dist.toFixed(1);
+        switchView('resultView');
+    }
+
+    function jump(i) { idx = i; sec = 0; isPrep = true; prepSec = 10; updateUI(); }
+    function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
+    function softFlash() { const l = document.getElementById('flashLayer'); l.classList.remove('pulse-active'); void l.offsetWidth; l.classList.add('pulse-active'); }
+    function openGuidedView() { switchView('guidedView'); }
+    function generateGuidedPlan() {
+        const h = parseInt(document.getElementById('guideHeight').value);
+        const t = parseInt(document.getElementById('guideTime').value);
+        let acc = 0;
+        stages = originalStages.map((b, i) => {
+            let d = Math.round((t/60)*b.d);
+            if (i === 5) d = t - acc; else acc += d;
+            return { ...b, d: Math.max(0, d), s: Math.round((h/186)*b.s*10)/10 };
+        });
+        renderSetupList(); switchView('setupView');
+    }
+    function exportSettings() {
+        const blob = new Blob([JSON.stringify(stages)], { type: "application/json" });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Zone2_Backup.json"; a.click();
+    }
+    function importSettings(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (ev) => { stages = JSON.parse(ev.target.result); renderSetupList(); };
+        reader.readAsText(file);
+    }
+    function resetSettings() { if (confirm("確定重置？")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
+
+    async function shareResult() {
+        try {
+            const canvas = await html2canvas(document.getElementById('captureArea'), { scale: 2 });
+            canvas.toBlob(blob => {
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Result.png"; a.click();
+            });
+        } catch (e) { alert("截圖失敗"); }
+    }
+
+    function initSetup() {
+        const isDark = localStorage.getItem(THEME_KEY) === 'dark';
+        if (isDark) document.body.classList.add('dark-theme');
+        document.getElementById('themeBtn').innerHTML = isDark ? sunIcon : moonIcon;
+        const saved = localStorage.getItem(STORAGE_KEY);
+        stages = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(originalStages));
+        renderSetupList();
+        setTimeout(() => { document.body.style.display = 'none'; void document.body.offsetHeight; document.body.style.display = 'flex'; }, 10);
+    }
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => { if (!refreshing) { refreshing = true; window.location.reload(); } });
+    }
+    initSetup();
+</script>
+</body>
+</html>
+v45.8.6</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
