@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 v45.8.7</title>
+    <title>Zone2 訓練儀表板 v45.8.8</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -166,7 +166,7 @@
                 <button class="btn-finish" onclick="startWorkout()">開始訓練</button>
             </div>
         </div>
-        <div style="position: absolute; bottom: 5px; right: 15px; font-size: 0.55rem; font-weight: 800; color: var(--text-muted); opacity: 0.3; pointer-events: none; letter-spacing: 0.5px;">v45.8.7</div>
+        <div style="position: absolute; bottom: 5px; right: 15px; font-size: 0.55rem; font-weight: 800; color: var(--text-muted); opacity: 0.3; pointer-events: none; letter-spacing: 0.5px;">v45.8.8</div>
     </div>
 
     <div id="guidedView" class="view-section">
@@ -464,10 +464,18 @@
         });
         renderSetupList(); switchView('setupView');
     }
+
     function exportSettings() {
+        let fileName = prompt("請輸入備份檔案名稱：", "Zone2_Backup");
+        if (fileName === null) return;
+        if (fileName.trim() === "") fileName = "Zone2_Backup";
         const blob = new Blob([JSON.stringify(stages)], { type: "application/json" });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Zone2_Backup.json"; a.click();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${fileName}.json`;
+        a.click();
     }
+
     function importSettings(e) {
         const file = e.target.files[0];
         const reader = new FileReader();
@@ -479,10 +487,34 @@
     async function shareResult() {
         try {
             const canvas = await html2canvas(document.getElementById('captureArea'), { scale: 2 });
-            canvas.toBlob(blob => {
-                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Result.png"; a.click();
+            canvas.toBlob(async (blob) => {
+                const file = new File([blob], "Zone2_Result.png", { type: "image/png" });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Zone2 訓練成果',
+                            text: '看看我的訓練成果！'
+                        });
+                    } catch (shareErr) {
+                        if (shareErr.name !== 'AbortError') {
+                            downloadFallback(blob);
+                        }
+                    }
+                } else {
+                    downloadFallback(blob);
+                }
             });
-        } catch (e) { alert("截圖失敗"); }
+        } catch (e) {
+            alert("截圖失敗");
+        }
+    }
+
+    function downloadFallback(blob) {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = "Zone2_Result.png";
+        a.click();
     }
 
     function initSetup() {
