@@ -536,12 +536,18 @@
         }
     }
 
+    // --- 新增：防呆確認機制 ---
     function handleSideBtn() {
-        if (document.getElementById('sideBtn').classList.contains('btn-red')) {
-            showSummary();
-        } else {
-            releaseWakeLock();
-            location.reload();
+        const isEndWorkout = document.getElementById('sideBtn').classList.contains('btn-red');
+        const confirmMsg = isEndWorkout ? "確定要提前結束運動並查看結算畫面嗎？" : "確定要回到設定畫面嗎？目前的進度將會遺失。";
+        
+        if (confirm(confirmMsg)) {
+            if (isEndWorkout) {
+                showSummary();
+            } else {
+                releaseWakeLock();
+                location.reload();
+            }
         }
     }
 
