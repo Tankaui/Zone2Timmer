@@ -174,21 +174,47 @@
         .level-box { padding: 10px 0; border-radius: 10px; text-align: center; font-weight: 900; font-size: 1rem; color: var(--text-dark); background: var(--input-bg); border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
         .level-box.active { background: var(--c1); color: var(--btn-blue-bg); border-color: var(--btn-blue-bg); }
 
+        /* --- 修正後的結果頁面樣式 --- */
         #resultView { background-color: var(--bg-page); padding: 0; }
         .bg-award-watermark { position: absolute; top: 12dvh; left: -10dvw; transform: rotate(-15deg); font-size: 38rem; font-weight: 900; color: rgba(250, 120, 50, 0.05); pointer-events: none; z-index: 0; line-height: 1; white-space: nowrap; }
-        .result-container { flex: 1; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 1; max-width: 90dvw; margin: auto; padding: 40px 30px 20px 30px; }
-        .result-title-card { background-color: var(--res-title-bg); color: var(--res-title-text); padding: 18px 40px; border-radius: 18px; font-size: 2.5rem; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 25px; box-shadow: 0 5px 0 rgba(255,159,0,0.1); position: relative; white-space: nowrap; }
+        
+        .result-container { 
+            flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 1; 
+            max-width: 90dvw; margin: auto; padding: 40px 0 20px 0; /* 移除容器內左右內距 */
+        }
+        
+        .result-title-card { 
+            background-color: var(--res-title-bg); color: var(--res-title-text); 
+            padding: 18px 0; border-radius: 18px; font-size: 2.2rem; font-weight: 900; 
+            letter-spacing: -1.5px; margin-bottom: 25px; box-shadow: 0 5px 0 rgba(255,159,0,0.1); 
+            width: 100%; text-align: center; /* 寬度 100% 確保切齊 */
+        }
+
         .result-progress-bar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0px; width: 100%; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 25px; flex-shrink: 0; }
         .prog-dot { height: 100%; }
-        .result-main-text { color: var(--text-dark); font-size: 1.3rem; font-weight: 800; margin-bottom: 25px; z-index: 1; white-space: nowrap;}
-        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; z-index: 1;}
-        .stat-card-plane { background: var(--card-white); padding: 15px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; position: relative; box-shadow: 0 2px 10px var(--divider-color); aspect-ratio: 1 / 1; }
-        .stat-badge { position: absolute; top: -10px; left: -10px; width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1rem; }
+        
+        .result-main-text { color: var(--text-dark); font-size: 1.3rem; font-weight: 800; margin-bottom: 25px; z-index: 1; text-align: center; width: 100%; }
+        
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; z-index: 1; }
+        
+        .stat-card-plane { 
+            background: var(--card-white); padding: 15px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; 
+            position: relative; box-shadow: 0 2px 10px var(--divider-color); aspect-ratio: 1 / 1; 
+            width: 100%; /* 強制填滿 Grid */
+        }
+        
+        /* 修正徽章位置：將徽章從負數溢出改為在框內對齊 */
+        .stat-badge { position: absolute; top: 12px; left: 12px; width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.9rem; }
+        
         .stat-label-plane { font-size: 0.9rem; font-weight: 800; color: var(--text-muted); margin-bottom: -5px; }
         .stat-value-plane { font-size: 2.6rem; font-weight: 900; color: var(--text-dark); letter-spacing: -1px; line-height: 1;}
-        .result-footer-cute { width: 100%; background: var(--card-white); padding: 15px; border-radius: 15px; text-align: center; color: var(--text-muted); margin-bottom: 10px; z-index: 1; }
+        
+        .result-footer-cute { width: 100%; background: var(--card-white); padding: 20px; border-radius: 20px; text-align: center; color: var(--text-muted); margin-bottom: 10px; z-index: 1; box-shadow: 0 2px 10px var(--divider-color); }
         .cute-main { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); }
         .cute-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; font-weight: 700; }
+        
+        /* 確保底部按鈕寬度也對齊 */
+        #actionButtons { width: 100%; max-width: 90dvw; margin: 0 auto 20px auto; padding: 0; }
     </style>
 </head>
 <body>
@@ -289,6 +315,7 @@
                     <div class="result-title-card">- 恭喜訓練完成 -</div>
                     <div class="result-progress-bar" id="resultBarTop"></div>
                     <div class="result-main-text">完成了一場很讚的走路運動！</div>
+                    
                     <div class="result-grid">
                         <div class="stat-card-plane">
                             <div class="stat-badge" style="background:var(--c2); color:var(--c2-t);">#</div>
@@ -301,16 +328,18 @@
                             <span id="resDistance" class="stat-value-plane">0.0</span>
                         </div>
                     </div>
+                    
                     <div style="flex: 1; display: flex; align-items: center; width: 100%;">
                         <div class="result-progress-bar" id="resultBarBottom"></div>
                     </div>
+                    
                     <div class="result-footer-cute">
                         <div class="cute-main">今天也超級棒喔！( *ˊᵕˋ)✩︎‧₊</div>
                         <div class="cute-sub">記得好好休息，補充水分跟蛋白質</div>
                     </div>
                 </div>
             </div>
-            <div class="control-group" id="actionButtons" style="width: 100%; padding: 0 20px 20px 20px; grid-template-columns: 1fr 1fr;">
+            <div class="control-group" id="actionButtons">
                 <button class="btn-finish" onclick="location.reload()">返回設定</button>
                 <button class="btn-gray" id="shareBtn" onclick="shareResult()">分享與儲存</button>
             </div>
@@ -318,327 +347,328 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script>
-    const originalStages = [
-        { n: "暖身", d: 8, i: 3, s: 5, bg: "var(--c1)" },
-        { n: "預熱", d: 7, i: 8, s: 5.5, bg: "var(--c2)" },
-        { n: "挑戰", d: 15, i: 12, s: 5, bg: "var(--c3)" },
-        { n: "魔王", d: 12, i: 15, s: 4.5, bg: "var(--c4)" },
-        { n: "高位", d: 13, i: 9, s: 5.5, bg: "var(--c5)" },
-        { n: "緩和", d: 5, i: 0, s: 5, bg: "var(--c6)" }
-    ];
+    <script>
+        // ... (JS 代碼與原版完全一致)
+        const originalStages = [
+            { n: "暖身", d: 8, i: 3, s: 5, bg: "var(--c1)" },
+            { n: "預熱", d: 7, i: 8, s: 5.5, bg: "var(--c2)" },
+            { n: "挑戰", d: 15, i: 12, s: 5, bg: "var(--c3)" },
+            { n: "魔王", d: 12, i: 15, s: 4.5, bg: "var(--c4)" },
+            { n: "高位", d: 13, i: 9, s: 5.5, bg: "var(--c5)" },
+            { n: "緩和", d: 5, i: 0, s: 5, bg: "var(--c6)" }
+        ];
 
-    let currentLevel = 'challenge';
-    const levelData = {
-        'challenge': {
-            desc: '針對有重訓習慣、心肺耐受度極高者。最高 15% 坡度將帶來極限燃脂效果，請隨時注意關節感受。',
-            base: [
-                { n: "暖身", d: 8, i: 3, s: 5.0 }, { n: "預熱", d: 7, i: 8, s: 5.5 },
-                { n: "挑戰", d: 15, i: 12, s: 5.0 }, { n: "魔王", d: 12, i: 15, s: 4.5 },
-                { n: "高位", d: 13, i: 9, s: 5.5 }, { n: "緩和", d: 5, i: 0, s: 5.0 }
-            ]
-        },
-        'advanced': {
-            desc: '適合平時有運動習慣者。保留爬坡阻力，但將最高坡度壓在 10%，有效避免代償與過度疲勞。',
-            base: [
-                { n: "暖身", d: 8, i: 2, s: 5.0 }, { n: "預熱", d: 7, i: 5, s: 5.2 },
-                { n: "挑戰", d: 15, i: 8, s: 5.0 }, { n: "魔王", d: 12, i: 10, s: 4.5 },
-                { n: "高位", d: 13, i: 6, s: 5.2 }, { n: "緩和", d: 5, i: 0, s: 4.5 }
-            ]
-        },
-        'beginner': {
-            desc: '安全第一，保護膝關節。適合無運動習慣或新手，重點在於維持運動心率並走完全程，嚴禁抓扶手。',
-            base: [
-                { n: "暖身", d: 8, i: 0, s: 4.5 }, { n: "預熱", d: 7, i: 3, s: 4.8 },
-                { n: "挑戰", d: 15, i: 5, s: 4.5 }, { n: "魔王", d: 12, i: 6, s: 4.0 },
-                { n: "高位", d: 13, i: 4, s: 4.8 }, { n: "緩和", d: 5, i: 0, s: 4.0 }
-            ]
+        let currentLevel = 'challenge';
+        const levelData = {
+            'challenge': {
+                desc: '針對有重訓習慣、心肺耐受度極高者。最高 15% 坡度將帶來極限燃脂效果，請隨時注意關節感受。',
+                base: [
+                    { n: "暖身", d: 8, i: 3, s: 5.0 }, { n: "預熱", d: 7, i: 8, s: 5.5 },
+                    { n: "挑戰", d: 15, i: 12, s: 5.0 }, { n: "魔王", d: 12, i: 15, s: 4.5 },
+                    { n: "高位", d: 13, i: 9, s: 5.5 }, { n: "緩和", d: 5, i: 0, s: 5.0 }
+                ]
+            },
+            'advanced': {
+                desc: '適合平時有運動習慣者。保留爬坡阻力，但將最高坡度壓在 10%，有效避免代償與過度疲勞。',
+                base: [
+                    { n: "暖身", d: 8, i: 2, s: 5.0 }, { n: "預熱", d: 7, i: 5, s: 5.2 },
+                    { n: "挑戰", d: 15, i: 8, s: 5.0 }, { n: "魔王", d: 12, i: 10, s: 4.5 },
+                    { n: "高位", d: 13, i: 6, s: 5.2 }, { n: "緩和", d: 5, i: 0, s: 4.5 }
+                ]
+            },
+            'beginner': {
+                desc: '安全第一，保護膝關節。適合無運動習慣或新手，重點在於維持運動心率並走完全程，嚴禁抓扶手。',
+                base: [
+                    { n: "暖身", d: 8, i: 0, s: 4.5 }, { n: "預熱", d: 7, i: 3, s: 4.8 },
+                    { n: "挑戰", d: 15, i: 5, s: 4.5 }, { n: "魔王", d: 12, i: 6, s: 4.0 },
+                    { n: "高位", d: 13, i: 4, s: 4.8 }, { n: "緩和", d: 5, i: 0, s: 4.0 }
+                ]
+            }
+        };
+
+        const STORAGE_KEY = 'zone2_stages_v45';
+        const THEME_KEY = 'zone2_theme_pref';
+        const moonIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+        const sunIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+
+        let stages = [], stageTimeTracker = [0, 0, 0, 0, 0, 0]; 
+        let idx = 0, sec = 0, total = 0, run = false, timerInterval;
+        let isPrep = false, prepSec = 10, wakeLock = null;
+        let referenceTime = 0, audioUnlocked = false;
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep(freq, duration) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.frequency.value = freq; gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
         }
-    };
 
-    const STORAGE_KEY = 'zone2_stages_v45';
-    const THEME_KEY = 'zone2_theme_pref';
-    const moonIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
-    const sunIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
-
-    let stages = [], stageTimeTracker = [0, 0, 0, 0, 0, 0]; 
-    let idx = 0, sec = 0, total = 0, run = false, timerInterval;
-    let isPrep = false, prepSec = 10, wakeLock = null;
-    let referenceTime = 0, audioUnlocked = false;
-
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playBeep(freq, duration) {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.frequency.value = freq; gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        osc.start(); osc.stop(audioCtx.currentTime + duration);
-    }
-
-    function unlockAudio() {
-        if (audioUnlocked) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        gain.gain.value = 0;
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.01);
-        audioUnlocked = true;
-    }
-
-    async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} }
-    function releaseWakeLock() { if (wakeLock) { wakeLock.release(); wakeLock = null; } }
-
-    function toggleTheme() {
-        document.body.classList.toggle('dark-theme');
-        const isDark = document.body.classList.contains('dark-theme');
-        localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
-        document.getElementById('themeBtn').innerHTML = isDark ? sunIcon : moonIcon;
-    }
-
-    function validateInput(el, min, max) {
-        let val = parseFloat(el.value);
-        if (isNaN(val) || val < min) el.value = min;
-        if (val > max) el.value = max;
-        calcTotal();
-    }
-
-    function renderSetupList() {
-        const list = document.getElementById('inputsList');
-        list.innerHTML = '';
-        stages.forEach((s, i) => {
-            list.innerHTML += `<div class="setup-card" style="border-left-color: ${s.bg}">
-                <div class="card-name">${s.n}</div>
-                <div class="input-group"><span class="input-label">時間</span><input type="number" inputmode="numeric" pattern="[0-9]*" id="d-${i}" value="${s.d}" min="0" onblur="validateInput(this, 0, 180)" oninput="calcTotal()" onclick="this.select()"></div>
-                <div class="input-group"><span class="input-label">坡度</span><input type="number" inputmode="numeric" pattern="[0-9]*" id="i-${i}" value="${s.i}" min="0" onblur="validateInput(this, 0, 40)" onclick="this.select()"></div>
-                <div class="input-group"><span class="input-label">速度</span><input type="number" inputmode="decimal" id="s-${i}" value="${s.s}" step="0.1" min="0.1" onblur="validateInput(this, 0.1, 30)" onclick="this.select()"></div>
-            </div>`;
-        });
-        calcTotal();
-    }
-
-    function calcTotal() {
-        let t = 0;
-        stages.forEach((_, i) => { t += parseInt(document.getElementById(`d-${i}`).value) || 0; });
-        document.getElementById('setupTotal').innerText = t;
-    }
-
-    function switchView(id) {
-        document.querySelectorAll('.view-section').forEach(v => {
-            v.classList.remove('active-view');
-            setTimeout(() => { if (!v.classList.contains('active-view')) v.style.display = 'none'; }, 300);
-        });
-        const next = document.getElementById(id);
-        next.style.display = 'flex';
-        setTimeout(() => next.classList.add('active-view'), 50);
-    }
-
-    function startWorkout() {
-        let hasValidStage = false;
-        stages.forEach((s, i) => { 
-            s.d = parseInt(document.getElementById(`d-${i}`).value) || 0;
-            s.i = document.getElementById(`i-${i}`).value || 0;
-            s.s = parseFloat(document.getElementById(`s-${i}`).value) || 5;
-            if (s.d > 0) hasValidStage = true;
-        });
-        if (!hasValidStage) return alert("請至少設定一個階段的時間大於 0 分鐘");
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(stages));
-        const grid = document.getElementById('stageGrid');
-        grid.innerHTML = '';
-        stages.forEach((s, i) => { 
-            let dimStyle = s.d <= 0 ? "opacity: 0.3; pointer-events: none;" : "";
-            grid.innerHTML += `<div class="stage-box s-${i}" style="${dimStyle}" onclick="jump(${i})">${s.n}</div>`; 
-        });
-        idx = 0; sec = 0; total = 0; stageTimeTracker.fill(0);
-        while (idx < stages.length && stages[idx].d <= 0) { idx++; }
-        isPrep = true; prepSec = 10;
-        switchView('workoutView');
-        updateUI();
-    }
-
-    function updateUI() {
-        const s = stages[idx];
-        const display = document.getElementById('mainDisplay');
-        const nextRow = document.getElementById('nextStageTimeRow');
-        const totalRow = document.getElementById('totalTimeRow');
-        document.querySelectorAll('.stage-box').forEach((b, i) => b.classList.toggle('active', i === idx));
-        if (isPrep) {
-            display.style.backgroundColor = "var(--prep-bg)";
-            document.getElementById('curStageName').innerText = `即將進入：${s.n}`;
-            document.getElementById('timer').innerText = `00:${prepSec.toString().padStart(2, '0')}`;
-            document.getElementById('inclineLabel').innerHTML = `<span class="target-label">NEXT</span>`;
-            document.getElementById('speedLabel').innerHTML = `<span class="target-label">NEXT</span>`;
-            totalRow.style.display = "none"; nextRow.style.display = "block";
-            document.getElementById('nextDuration').innerText = s.d;
-        } else {
-            display.style.backgroundColor = s.bg;
-            document.getElementById('curStageName').innerText = s.n;
-            document.getElementById('timer').innerText = fmt((s.d * 60) - sec);
-            document.getElementById('inclineLabel').innerHTML = ""; 
-            document.getElementById('speedLabel').innerHTML = "";
-            nextRow.style.display = "none"; totalRow.style.display = "block";
-            document.getElementById('totalTime').innerText = fmt(total);
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            gain.gain.value = 0;
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.01);
+            audioUnlocked = true;
         }
-        document.getElementById('incline').innerText = s.i;
-        document.getElementById('speed').innerText = s.s;
-    }
 
-    function tickLogic(isCatchingUp = false) {
-        if (isPrep) {
-            prepSec--;
-            if (!isCatchingUp && prepSec <= 3 && prepSec > 0) playBeep(800, 0.1);
-            if (prepSec <= 0) { isPrep = false; if (!isCatchingUp) playBeep(1200, 0.4); }
-        } else {
-            sec++; total++; stageTimeTracker[idx]++;
-            const rem = (stages[idx].d * 60) - sec;
-            if (!isCatchingUp && (rem === 30 || (rem <= 5 && rem > 0))) { playBeep(rem === 30 ? 600 : 1000, 0.1); softFlash(); }
-            if (sec >= stages[idx].d * 60) {
-                idx++;
-                while (idx < stages.length && stages[idx].d <= 0) { idx++; }
-                if (idx < stages.length) { sec = 0; isPrep = true; prepSec = 10; } 
-                else { showSummary(); return; }
+        async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} }
+        function releaseWakeLock() { if (wakeLock) { wakeLock.release(); wakeLock = null; } }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+            document.getElementById('themeBtn').innerHTML = isDark ? sunIcon : moonIcon;
+        }
+
+        function validateInput(el, min, max) {
+            let val = parseFloat(el.value);
+            if (isNaN(val) || val < min) el.value = min;
+            if (val > max) el.value = max;
+            calcTotal();
+        }
+
+        function renderSetupList() {
+            const list = document.getElementById('inputsList');
+            list.innerHTML = '';
+            stages.forEach((s, i) => {
+                list.innerHTML += `<div class="setup-card" style="border-left-color: ${s.bg}">
+                    <div class="card-name">${s.n}</div>
+                    <div class="input-group"><span class="input-label">時間</span><input type="number" inputmode="numeric" pattern="[0-9]*" id="d-${i}" value="${s.d}" min="0" onblur="validateInput(this, 0, 180)" oninput="calcTotal()" onclick="this.select()"></div>
+                    <div class="input-group"><span class="input-label">坡度</span><input type="number" inputmode="numeric" pattern="[0-9]*" id="i-${i}" value="${s.i}" min="0" onblur="validateInput(this, 0, 40)" onclick="this.select()"></div>
+                    <div class="input-group"><span class="input-label">速度</span><input type="number" inputmode="decimal" id="s-${i}" value="${s.s}" step="0.1" min="0.1" onblur="validateInput(this, 0.1, 30)" onclick="this.select()"></div>
+                </div>`;
+            });
+            calcTotal();
+        }
+
+        function calcTotal() {
+            let t = 0;
+            stages.forEach((_, i) => { t += parseInt(document.getElementById(`d-${i}`).value) || 0; });
+            document.getElementById('setupTotal').innerText = t;
+        }
+
+        function switchView(id) {
+            document.querySelectorAll('.view-section').forEach(v => {
+                v.classList.remove('active-view');
+                setTimeout(() => { if (!v.classList.contains('active-view')) v.style.display = 'none'; }, 300);
+            });
+            const next = document.getElementById(id);
+            next.style.display = 'flex';
+            setTimeout(() => next.classList.add('active-view'), 50);
+        }
+
+        function startWorkout() {
+            let hasValidStage = false;
+            stages.forEach((s, i) => { 
+                s.d = parseInt(document.getElementById(`d-${i}`).value) || 0;
+                s.i = document.getElementById(`i-${i}`).value || 0;
+                s.s = parseFloat(document.getElementById(`s-${i}`).value) || 5;
+                if (s.d > 0) hasValidStage = true;
+            });
+            if (!hasValidStage) return alert("請至少設定一個階段的時間大於 0 分鐘");
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(stages));
+            const grid = document.getElementById('stageGrid');
+            grid.innerHTML = '';
+            stages.forEach((s, i) => { 
+                let dimStyle = s.d <= 0 ? "opacity: 0.3; pointer-events: none;" : "";
+                grid.innerHTML += `<div class="stage-box s-${i}" style="${dimStyle}" onclick="jump(${i})">${s.n}</div>`; 
+            });
+            idx = 0; sec = 0; total = 0; stageTimeTracker.fill(0);
+            while (idx < stages.length && stages[idx].d <= 0) { idx++; }
+            isPrep = true; prepSec = 10;
+            switchView('workoutView');
+            updateUI();
+        }
+
+        function updateUI() {
+            const s = stages[idx];
+            const display = document.getElementById('mainDisplay');
+            const nextRow = document.getElementById('nextStageTimeRow');
+            const totalRow = document.getElementById('totalTimeRow');
+            document.querySelectorAll('.stage-box').forEach((b, i) => b.classList.toggle('active', i === idx));
+            if (isPrep) {
+                display.style.backgroundColor = "var(--prep-bg)";
+                document.getElementById('curStageName').innerText = `即將進入：${s.n}`;
+                document.getElementById('timer').innerText = `00:${prepSec.toString().padStart(2, '0')}`;
+                document.getElementById('inclineLabel').innerHTML = `<span class="target-label">NEXT</span>`;
+                document.getElementById('speedLabel').innerHTML = `<span class="target-label">NEXT</span>`;
+                totalRow.style.display = "none"; nextRow.style.display = "block";
+                document.getElementById('nextDuration').innerText = s.d;
+            } else {
+                display.style.backgroundColor = s.bg;
+                document.getElementById('curStageName').innerText = s.n;
+                document.getElementById('timer').innerText = fmt((s.d * 60) - sec);
+                document.getElementById('inclineLabel').innerHTML = ""; 
+                document.getElementById('speedLabel').innerHTML = "";
+                nextRow.style.display = "none"; totalRow.style.display = "block";
+                document.getElementById('totalTime').innerText = fmt(total);
+            }
+            document.getElementById('incline').innerText = s.i;
+            document.getElementById('speed').innerText = s.s;
+        }
+
+        function tickLogic(isCatchingUp = false) {
+            if (isPrep) {
+                prepSec--;
+                if (!isCatchingUp && prepSec <= 3 && prepSec > 0) playBeep(800, 0.1);
+                if (prepSec <= 0) { isPrep = false; if (!isCatchingUp) playBeep(1200, 0.4); }
+            } else {
+                sec++; total++; stageTimeTracker[idx]++;
+                const rem = (stages[idx].d * 60) - sec;
+                if (!isCatchingUp && (rem === 30 || (rem <= 5 && rem > 0))) { playBeep(rem === 30 ? 600 : 1000, 0.1); softFlash(); }
+                if (sec >= stages[idx].d * 60) {
+                    idx++;
+                    while (idx < stages.length && stages[idx].d <= 0) { idx++; }
+                    if (idx < stages.length) { sec = 0; isPrep = true; prepSec = 10; } 
+                    else { showSummary(); return; }
+                }
+            }
+            if (!isCatchingUp) updateUI();
+        }
+
+        function toggle() {
+            unlockAudio();
+            run = !run;
+            const btn = document.getElementById('playBtn');
+            const side = document.getElementById('sideBtn');
+            if (run) {
+                requestWakeLock();
+                btn.innerText = "暫停"; btn.classList.add('btn-red');
+                side.innerText = "回設定"; side.classList.remove('btn-red');
+                referenceTime = Date.now();
+                timerInterval = setInterval(() => {
+                    let now = Date.now(), elapsed = now - referenceTime;
+                    if (elapsed >= 1000) {
+                        let ticks = Math.floor(elapsed / 1000);
+                        referenceTime += ticks * 1000;
+                        for (let i = 0; i < ticks; i++) tickLogic(i !== ticks - 1);
+                    }
+                }, 200);
+            } else {
+                releaseWakeLock();
+                btn.innerText = "繼續運動"; btn.classList.remove('btn-red');
+                side.innerText = "結束運動"; side.classList.add('btn-red');
+                clearInterval(timerInterval);
             }
         }
-        if (!isCatchingUp) updateUI();
-    }
 
-    function toggle() {
-        unlockAudio();
-        run = !run;
-        const btn = document.getElementById('playBtn');
-        const side = document.getElementById('sideBtn');
-        if (run) {
-            requestWakeLock();
-            btn.innerText = "暫停"; btn.classList.add('btn-red');
-            side.innerText = "回設定"; side.classList.remove('btn-red');
-            referenceTime = Date.now();
-            timerInterval = setInterval(() => {
-                let now = Date.now(), elapsed = now - referenceTime;
-                if (elapsed >= 1000) {
-                    let ticks = Math.floor(elapsed / 1000);
-                    referenceTime += ticks * 1000;
-                    for (let i = 0; i < ticks; i++) tickLogic(i !== ticks - 1);
-                }
-            }, 200);
-        } else {
-            releaseWakeLock();
-            btn.innerText = "繼續運動"; btn.classList.remove('btn-red');
-            side.innerText = "結束運動"; side.classList.add('btn-red');
-            clearInterval(timerInterval);
+        function handleSideBtn() {
+            const isEnd = document.getElementById('sideBtn').classList.contains('btn-red');
+            if (confirm(isEnd ? "確定要提前結束嗎？" : "確定要回設定嗎？")) {
+                if (isEnd) showSummary(); else location.reload();
+            }
         }
-    }
 
-    function handleSideBtn() {
-        const isEnd = document.getElementById('sideBtn').classList.contains('btn-red');
-        if (confirm(isEnd ? "確定要提前結束嗎？" : "確定要回設定嗎？")) {
-            if (isEnd) showSummary(); else location.reload();
+        function showSummary() {
+            clearInterval(timerInterval); releaseWakeLock();
+            document.getElementById('resTotalTime').innerText = fmt(total);
+            let dist = 0; stageTimeTracker.forEach((t, i) => dist += (t/3600)*stages[i].s);
+            document.getElementById('resDistance').innerText = dist.toFixed(1);
+            switchView('resultView');
         }
-    }
 
-    function showSummary() {
-        clearInterval(timerInterval); releaseWakeLock();
-        document.getElementById('resTotalTime').innerText = fmt(total);
-        let dist = 0; stageTimeTracker.forEach((t, i) => dist += (t/3600)*stages[i].s);
-        document.getElementById('resDistance').innerText = dist.toFixed(1);
-        switchView('resultView');
-    }
+        function jump(i) { idx = i; sec = 0; isPrep = true; prepSec = 10; updateUI(); }
+        function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
+        function softFlash() { const l = document.getElementById('flashLayer'); l.classList.remove('pulse-active'); void l.offsetWidth; l.classList.add('pulse-active'); }
+        function openGuidedView() { switchView('guidedView'); }
 
-    function jump(i) { idx = i; sec = 0; isPrep = true; prepSec = 10; updateUI(); }
-    function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
-    function softFlash() { const l = document.getElementById('flashLayer'); l.classList.remove('pulse-active'); void l.offsetWidth; l.classList.add('pulse-active'); }
-    function openGuidedView() { switchView('guidedView'); }
+        function selectLevel(lvl) {
+            currentLevel = lvl;
+            document.querySelectorAll('.level-box').forEach(b => b.classList.remove('active'));
+            document.getElementById(`lvl-${lvl}`).classList.add('active');
+            document.getElementById('levelDesc').innerText = levelData[lvl].desc;
+        }
 
-    function selectLevel(lvl) {
-        currentLevel = lvl;
-        document.querySelectorAll('.level-box').forEach(b => b.classList.remove('active'));
-        document.getElementById(`lvl-${lvl}`).classList.add('active');
-        document.getElementById('levelDesc').innerText = levelData[lvl].desc;
-    }
-
-    function generateGuidedPlan() {
-        const h = parseInt(document.getElementById('guideHeight').value);
-        const t = parseInt(document.getElementById('guideTime').value);
-        let acc = 0;
-        
-        const selectedBase = levelData[currentLevel].base;
-        const bgColors = ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)", "var(--c6)"];
-        
-        stages = selectedBase.map((b, i) => {
-            let d = Math.round((t/60)*b.d);
-            if (i === 5) d = t - acc; else acc += d;
+        function generateGuidedPlan() {
+            const h = parseInt(document.getElementById('guideHeight').value);
+            const t = parseInt(document.getElementById('guideTime').value);
+            let acc = 0;
             
-            let adjustedSpeed = Math.round((h/185)*b.s*10)/10;
+            const selectedBase = levelData[currentLevel].base;
+            const bgColors = ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)", "var(--c6)"];
             
-            return { ...b, d: Math.max(0, d), s: adjustedSpeed, bg: bgColors[i] };
-        });
-        
-        renderSetupList(); 
-        switchView('setupView');
-    }
-
-    async function exportSettings() {
-        let fileName = prompt("請輸入備份檔案名稱：", "Zone2_Backup");
-        if (fileName === null) return;
-        const exportData = stages.map((s, i) => ({
-            ...s,
-            d: parseInt(document.getElementById(`d-${i}`).value) || 0,
-            i: document.getElementById(`i-${i}`).value || 0,
-            s: parseFloat(document.getElementById(`s-${i}`).value) || 0
-        }));
-        const blob = new Blob([JSON.stringify(exportData)], { type: "application/json" });
-        const file = new File([blob], `${fileName}.json`, { type: "application/json" });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            try { await navigator.share({ files: [file], title: 'Zone2 設定導出' }); } catch (err) { if (err.name !== 'AbortError') downloadFallbackFile(blob, `${fileName}.json`); }
-        } else { downloadFallbackFile(blob, `${fileName}.json`); }
-    }
-
-    function downloadFallbackFile(blob, name) {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob); a.download = name; a.click();
-    }
-
-    function importSettings(e) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (ev) => { 
-            try { stages = JSON.parse(ev.target.result); renderSetupList(); } catch(e) { alert("無效的檔案格式"); }
-        };
-        reader.readAsText(file);
-    }
-    
-    function resetSettings() { if (confirm("確定重置？")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
-
-    async function shareResult() {
-        try {
-            const canvas = await html2canvas(document.getElementById('captureArea'), { scale: 2 });
-            canvas.toBlob(async (blob) => {
-                const file = new File([blob], "Zone2_Result.png", { type: "image/png" });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try { await navigator.share({ files: [file], title: 'Zone2 訓練成果' }); } catch (shareErr) { if (shareErr.name !== 'AbortError') downloadFallback(blob); }
-                } else { downloadFallback(blob); }
+            stages = selectedBase.map((b, i) => {
+                let d = Math.round((t/60)*b.d);
+                if (i === 5) d = t - acc; else acc += d;
+                
+                let adjustedSpeed = Math.round((h/185)*b.s*10)/10;
+                
+                return { ...b, d: Math.max(0, d), s: adjustedSpeed, bg: bgColors[i] };
             });
-        } catch (e) { alert("截圖失敗"); }
-    }
+            
+            renderSetupList(); 
+            switchView('setupView');
+        }
 
-    function downloadFallback(blob) {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob); a.download = "Zone2_Result.png"; a.click();
-    }
+        async function exportSettings() {
+            let fileName = prompt("請輸入備份檔案名稱：", "Zone2_Backup");
+            if (fileName === null) return;
+            const exportData = stages.map((s, i) => ({
+                ...s,
+                d: parseInt(document.getElementById(`d-${i}`).value) || 0,
+                i: document.getElementById(`i-${i}`).value || 0,
+                s: parseFloat(document.getElementById(`s-${i}`).value) || 0
+            }));
+            const blob = new Blob([JSON.stringify(exportData)], { type: "application/json" });
+            const file = new File([blob], `${fileName}.json`, { type: "application/json" });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try { await navigator.share({ files: [file], title: 'Zone2 設定導出' }); } catch (err) { if (err.name !== 'AbortError') downloadFallbackFile(blob, `${fileName}.json`); }
+            } else { downloadFallbackFile(blob, `${fileName}.json`); }
+        }
 
-    function initSetup() {
-        const isDark = localStorage.getItem(THEME_KEY) === 'dark';
-        if (isDark) document.body.classList.add('dark-theme');
-        document.getElementById('themeBtn').innerHTML = isDark ? sunIcon : moonIcon;
-        const saved = localStorage.getItem(STORAGE_KEY);
-        stages = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(originalStages));
-        renderSetupList();
-    }
+        function downloadFallbackFile(blob, name) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob); a.download = name; a.click();
+        }
 
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
-    }
-    initSetup();
-</script>
+        function importSettings(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (ev) => { 
+                try { stages = JSON.parse(ev.target.result); renderSetupList(); } catch(e) { alert("無效的檔案格式"); }
+            };
+            reader.readAsText(file);
+        }
+        
+        function resetSettings() { if (confirm("確定重置？")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
+
+        async function shareResult() {
+            try {
+                const canvas = await html2canvas(document.getElementById('captureArea'), { scale: 2 });
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], "Zone2_Result.png", { type: "image/png" });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try { await navigator.share({ files: [file], title: 'Zone2 訓練成果' }); } catch (shareErr) { if (shareErr.name !== 'AbortError') downloadFallback(blob); }
+                    } else { downloadFallback(blob); }
+                });
+            } catch (e) { alert("截圖失敗"); }
+        }
+
+        function downloadFallback(blob) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob); a.download = "Zone2_Result.png"; a.click();
+        }
+
+        function initSetup() {
+            const isDark = localStorage.getItem(THEME_KEY) === 'dark';
+            if (isDark) document.body.classList.add('dark-theme');
+            document.getElementById('themeBtn').innerHTML = isDark ? sunIcon : moonIcon;
+            const saved = localStorage.getItem(STORAGE_KEY);
+            stages = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(originalStages));
+            renderSetupList();
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
+        }
+        initSetup();
+    </script>
 </body>
 </html>
