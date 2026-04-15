@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zone2-cache-v45.9.4'; 
+const CACHE_NAME = 'zone2-cache-v45.9.5'; 
 const urlsToCache = [
   './',
   './index.html',
