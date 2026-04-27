@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 v45.9.6</title>
+    <title>Zone2 訓練儀表板 v45.9.7</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -182,12 +182,11 @@
 
         .level-box { padding: 10px 0; border-radius: 10px; text-align: center; font-weight: 900; font-size: 1rem; color: var(--text-dark); background: var(--input-bg); border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
         
-        /* 專屬配速生成的色彩修正 */
         #lvl-challenge.active { background: rgba(255, 69, 0, 0.1); color: var(--lvl-challenge); border-color: var(--lvl-challenge); }
         #lvl-advanced.active { background: rgba(64, 176, 229, 0.1); color: var(--lvl-advanced); border-color: var(--lvl-advanced); }
         #lvl-beginner.active { background: rgba(52, 199, 89, 0.1); color: var(--lvl-beginner); border-color: var(--lvl-beginner); }
 
-        #resultView { background-color: var(--bg-page); padding: 0; }
+        #resultView { background-color: var(--bg-page); padding: 0; overflow-y: auto; }
         .bg-award-watermark { position: absolute; top: 12dvh; left: -10dvw; transform: rotate(-15deg); font-size: 38rem; font-weight: 900; color: rgba(250, 120, 50, 0.05); pointer-events: none; z-index: 0; line-height: 1; white-space: nowrap; }
         .result-container { 
             flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 1; 
@@ -197,12 +196,12 @@
             background-color: var(--res-title-bg); color: var(--res-title-text); 
             padding: 18px 0; border-radius: 18px; font-size: 2.2rem; font-weight: 900; 
             letter-spacing: -1.5px; margin-bottom: 25px; box-shadow: 0 5px 0 rgba(255,159,0,0.1); 
-            width: 100%; text-align: center; 
+            width: 100%; text-align: center; flex-shrink: 0;
         }
         .result-progress-bar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0px; width: 100%; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 25px; flex-shrink: 0; }
         .prog-dot { height: 100%; }
-        .result-main-text { color: var(--text-dark); font-size: 1.3rem; font-weight: 800; margin-bottom: 25px; z-index: 1; text-align: center; width: 100%; }
-        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 20px; z-index: 1; }
+        .result-main-text { color: var(--text-dark); font-size: 1.3rem; font-weight: 800; margin-bottom: 25px; z-index: 1; text-align: center; width: 100%; flex-shrink: 0; }
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 15px; z-index: 1; flex-shrink: 0;}
         .stat-card-plane { 
             background: var(--card-white); padding: 15px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; 
             position: relative; box-shadow: 0 2px 10px var(--divider-color); aspect-ratio: 1 / 1; 
@@ -211,10 +210,10 @@
         .stat-badge { position: absolute; top: 12px; left: 12px; width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.9rem; }
         .stat-label-plane { font-size: 0.9rem; font-weight: 800; color: var(--text-muted); margin-bottom: -5px; }
         .stat-value-plane { font-size: 2.6rem; font-weight: 900; color: var(--text-dark); letter-spacing: -1px; line-height: 1;}
-        .result-footer-cute { width: 100%; background: var(--card-white); padding: 20px; border-radius: 20px; text-align: center; color: var(--text-muted); margin-bottom: 10px; z-index: 1; box-shadow: 0 2px 10px var(--divider-color); }
+        .result-footer-cute { width: 100%; background: var(--card-white); padding: 20px; border-radius: 20px; text-align: center; color: var(--text-muted); margin-bottom: 10px; z-index: 1; box-shadow: 0 2px 10px var(--divider-color); flex-shrink: 0;}
         .cute-main { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); }
         .cute-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; font-weight: 700; }
-        #actionButtons { width: 100%; max-width: 90dvw; margin: 0 auto 20px auto; padding: 0; }
+        #actionButtons { width: 100%; max-width: 90dvw; margin: 0 auto 20px auto; padding: 0; flex-shrink: 0;}
     </style>
 </head>
 <body>
@@ -245,7 +244,7 @@
                     <button class="btn-finish" onclick="startWorkout()">開始訓練</button>
                 </div>
             </div>
-            <div style="position: absolute; bottom: 5px; right: 15px; font-size: 0.55rem; font-weight: 800; color: var(--text-muted); opacity: 0.3; pointer-events: none; letter-spacing: 0.5px;">v45.9.6</div>
+            <div style="position: absolute; bottom: 5px; right: 15px; font-size: 0.55rem; font-weight: 800; color: var(--text-muted); opacity: 0.3; pointer-events: none; letter-spacing: 0.5px;">v45.9.7</div>
         </div>
 
         <div id="guidedView" class="view-section">
@@ -328,6 +327,18 @@
                             <div class="stat-badge" style="background:var(--c4); color:var(--c4-t);">★</div>
                             <span class="stat-label-plane">行走距離(km)</span>
                             <span id="resDistance" class="stat-value-plane">0.0</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card-plane" style="aspect-ratio: auto; margin-bottom: 20px; padding: 20px; flex-shrink: 0; z-index: 1;">
+                        <div class="stat-badge" style="background:var(--c5); color:var(--c5-t);">▲</div>
+                        <span class="stat-label-plane">總爬升高度</span>
+                        <div style="margin-top: 5px;">
+                            <span id="resElevation" class="stat-value-plane">0</span>
+                            <span style="font-size: 1.2rem; font-weight: 900; color: var(--text-dark);"> m</span>
+                        </div>
+                        <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-muted); margin-top: 8px;">
+                            相當於爬了 <span id="resFloors" style="font-size: 1.3rem; font-weight: 900; color: var(--text-dark);">0</span> 層樓
                         </div>
                     </div>
                     
@@ -432,7 +443,6 @@
             if (wakeLock) { wakeLock.release().then(() => { wakeLock = null; }).catch(()=>{}); wakeLock = null; } 
         }
 
-        // 確保手機螢幕變暗或切換 App 後再次回來時，重新抓取恆亮權限
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && run) {
                 requestWakeLock();
@@ -591,9 +601,25 @@
 
         function showSummary() {
             clearInterval(timerInterval); releaseWakeLock();
+            
+            // 計算時間、距離與爬升高度
             document.getElementById('resTotalTime').innerText = fmt(total);
-            let dist = 0; stageTimeTracker.forEach((t, i) => dist += (t/3600)*stages[i].s);
+            let dist = 0;
+            let elevation = 0;
+            
+            stageTimeTracker.forEach((t, i) => { 
+                let dKm = (t / 3600) * stages[i].s; // 該階段行走的公里數
+                dist += dKm; 
+                
+                let dMeters = dKm * 1000; // 轉換為公尺
+                let inclinePercent = parseFloat(stages[i].i) || 0; // 取得坡度百分比
+                elevation += dMeters * (inclinePercent / 100); // 累加爬升高度
+            });
+            
             document.getElementById('resDistance').innerText = dist.toFixed(1);
+            document.getElementById('resElevation').innerText = Math.round(elevation);
+            document.getElementById('resFloors').innerText = Math.round(elevation / 3);
+            
             switchView('resultView');
         }
 
