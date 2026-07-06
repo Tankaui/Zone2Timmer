@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Zone2 訓練儀表板 v45.9.9</title>
+    <title>Zone2 訓練儀表板 v46.0.0</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -186,11 +186,11 @@
         #lvl-advanced.active { background: rgba(64, 176, 229, 0.1); color: var(--lvl-advanced); border-color: var(--lvl-advanced); }
         #lvl-beginner.active { background: rgba(52, 199, 89, 0.1); color: var(--lvl-beginner); border-color: var(--lvl-beginner); }
 
-        #resultView { background-color: var(--bg-page); padding: 0; } /* 移除 overflow-y: auto 確保不捲動 */
+        #resultView { background-color: var(--bg-page); padding: 0; }
         .bg-award-watermark { position: absolute; top: 12dvh; left: -10dvw; transform: rotate(-15deg); font-size: 38rem; font-weight: 900; color: rgba(250, 120, 50, 0.05); pointer-events: none; z-index: 0; line-height: 1; white-space: nowrap; }
         .result-container { 
             flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 1; 
-            max-width: 90dvw; margin: auto; padding: 25px 0 15px 0; /* 縮減上下 padding */
+            max-width: 90dvw; margin: auto; padding: 25px 0 15px 0;
         }
         .result-title-card { 
             background-color: var(--res-title-bg); color: var(--res-title-text); 
@@ -227,7 +227,11 @@
         <div id="setupView" class="view-section active-view">
             <div class="setup-header">
                 <h1 class="setup-title">設定各階段目標</h1>
-                <div class="total-summary">訓練總時長：<span id="setupTotal" style="font-weight: 900; color: var(--text-dark);">60</span> 分鐘</div>
+                <div class="total-summary">
+                    總時長：<span id="setupTotal" style="font-weight: 900; color: var(--text-dark);">60</span> 分鐘 
+                    <span style="margin: 0 5px; color: var(--input-border);">|</span>
+                    預估距離：<span id="setupTotalDist" style="font-weight: 900; color: var(--text-dark);">0.0</span> km
+                </div>
                 <div id="themeBtn" class="theme-toggle-btn" onclick="toggleTheme()"></div>
             </div>
             <div class="inputs-list" id="inputsList"></div>
@@ -243,7 +247,7 @@
                     <button class="btn-finish" onclick="startWorkout()">開始訓練</button>
                 </div>
             </div>
-            <div style="position: absolute; bottom: 5px; right: 15px; font-size: 0.55rem; font-weight: 800; color: var(--text-muted); opacity: 0.3; pointer-events: none; letter-spacing: 0.5px;">v45.9.9</div>
+            <div style="position: absolute; bottom: 5px; right: 15px; font-size: 0.55rem; font-weight: 800; color: var(--text-muted); opacity: 0.3; pointer-events: none; letter-spacing: 0.5px;">v46.0.0</div>
         </div>
 
         <div id="guidedView" class="view-section">
@@ -251,7 +255,7 @@
             <div style="flex: 1; overflow-y: auto;">
                 <div class="guide-card">
                     <div class="guide-title">輸入生理與強度參數</div>
-                    <div class="guide-desc">系統將根據 **185cm / 60分鐘** 的基準公式，</br>精準配置各階段的「理想速度」與「訓練時長」。</div>
+                    <div class="guide-desc">系統將根據 **185cm / 60分鐘** 的基準公式，<br>精準配置各階段的「理想速度」與「訓練時長」。</div>
                     
                     <div class="guide-input-row" style="flex-direction: column; align-items: flex-start; border-bottom: none; padding-bottom: 0;">
                         <span class="guide-label" style="margin-bottom: 12px; width: 100%; text-align: center;">選擇訓練強度</span>
@@ -267,11 +271,18 @@
                     
                     <div class="guide-input-row" style="border-top: 1px dashed var(--input-border); padding-top: 15px;">
                         <span class="guide-label">身高 (公分)</span>
-                        <input type="number" inputmode="numeric" id="guideHeight" class="guide-input" value="185" onclick="this.select()">
+                        <input type="number" inputmode="numeric" id="guideHeight" class="guide-input" value="185" onclick="this.select()" oninput="updateGuideEstimatedDist()">
                     </div>
                     <div class="guide-input-row">
                         <span class="guide-label">預計運動 (分鐘)</span>
-                        <input type="number" inputmode="numeric" id="guideTime" class="guide-input" value="60" onclick="this.select()">
+                        <input type="number" inputmode="numeric" id="guideTime" class="guide-input" value="60" onclick="this.select()" oninput="updateGuideEstimatedDist()">
+                    </div>
+                    <div class="guide-input-row" style="border-top: 1px dashed var(--input-border); padding-top: 15px; margin-bottom: 0; border-bottom: none; padding-bottom: 0;">
+                        <span class="guide-label">預估行走距離</span>
+                        <div style="font-size: 1.4rem; font-weight: 900; color: var(--btn-blue-bg);">
+                            <span id="guideTotalDist">0.0</span> 
+                            <span style="font-size: 0.9rem; color: var(--text-muted);">km</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -473,7 +484,7 @@
                     <div class="card-name">${s.n}</div>
                     <div class="input-group"><span class="input-label">時間</span><input type="number" inputmode="numeric" pattern="[0-9]*" id="d-${i}" value="${s.d}" min="0" onblur="validateInput(this, 0, 180)" oninput="calcTotal()" onclick="this.select()"></div>
                     <div class="input-group"><span class="input-label">坡度</span><input type="number" inputmode="numeric" pattern="[0-9]*" id="i-${i}" value="${s.i}" min="0" onblur="validateInput(this, 0, 40)" onclick="this.select()"></div>
-                    <div class="input-group"><span class="input-label">速度</span><input type="number" inputmode="decimal" id="s-${i}" value="${s.s}" step="0.1" min="0.1" onblur="validateInput(this, 0.1, 30)" onclick="this.select()"></div>
+                    <div class="input-group"><span class="input-label">速度</span><input type="number" inputmode="decimal" id="s-${i}" value="${s.s}" step="0.1" min="0.1" onblur="validateInput(this, 0.1, 30)" oninput="calcTotal()" onclick="this.select()"></div>
                 </div>`;
             });
             calcTotal();
@@ -481,8 +492,38 @@
 
         function calcTotal() {
             let t = 0;
-            stages.forEach((_, i) => { t += parseInt(document.getElementById(`d-${i}`).value) || 0; });
+            let dist = 0;
+            stages.forEach((_, i) => { 
+                let d = parseInt(document.getElementById(`d-${i}`).value) || 0;
+                let s = parseFloat(document.getElementById(`s-${i}`).value) || 0;
+                t += d; 
+                dist += (d / 60) * s; 
+            });
             document.getElementById('setupTotal').innerText = t;
+            if (document.getElementById('setupTotalDist')) {
+                document.getElementById('setupTotalDist').innerText = dist.toFixed(1);
+            }
+        }
+
+        function updateGuideEstimatedDist() {
+            const h = parseInt(document.getElementById('guideHeight').value) || 185;
+            const t = parseInt(document.getElementById('guideTime').value) || 60;
+            const selectedBase = levelData[currentLevel].base;
+            let acc = 0;
+            let totalDist = 0;
+            
+            selectedBase.forEach((b, i) => {
+                let d = Math.round((t/60)*b.d);
+                if (i === 5) d = t - acc; else acc += d;
+                d = Math.max(0, d); 
+                
+                let adjustedSpeed = Math.round((h/185)*b.s*10)/10;
+                totalDist += (d / 60) * adjustedSpeed;
+            });
+            
+            if (document.getElementById('guideTotalDist')) {
+                document.getElementById('guideTotalDist').innerText = totalDist.toFixed(1);
+            }
         }
 
         function switchView(id) {
@@ -623,13 +664,18 @@
         function jump(i) { idx = i; sec = 0; isPrep = true; prepSec = 10; updateUI(); }
         function fmt(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
         function softFlash() { const l = document.getElementById('flashLayer'); l.classList.remove('pulse-active'); void l.offsetWidth; l.classList.add('pulse-active'); }
-        function openGuidedView() { switchView('guidedView'); }
+        
+        function openGuidedView() { 
+            switchView('guidedView'); 
+            updateGuideEstimatedDist();
+        }
 
         function selectLevel(lvl) {
             currentLevel = lvl;
             document.querySelectorAll('.level-box').forEach(b => b.classList.remove('active'));
             document.getElementById(`lvl-${lvl}`).classList.add('active');
             document.getElementById('levelDesc').innerText = levelData[lvl].desc;
+            updateGuideEstimatedDist();
         }
 
         function generateGuidedPlan() {
